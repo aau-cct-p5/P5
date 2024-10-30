@@ -23,7 +23,7 @@ class _MyHomePageState extends State<MyHomePage> {
   AccelerometerEvent? _accelerometerEvent;
   GyroscopeEvent? _gyroscopeEvent;
   final MapController _mapController = MapController();
-  double _currentZoom = 15.0;
+  final double _currentZoom = 15.0;
   late Future<void> _initialPositionFuture;
 
   // List to store historic data
@@ -224,7 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           TileLayer(
                             urlTemplate:
                                 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            subdomains: ['a', 'b', 'c'],
+                            subdomains: const ['a', 'b', 'c'],
                           ),
                           MarkerLayer(
                             markers: [

@@ -1,4 +1,4 @@
-package com.example.flutter_app
+package dk.cct5-group502.bikehero
 
 import io.flutter.embedding.android.FlutterActivity
 

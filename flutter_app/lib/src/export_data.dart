@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'HistoricData.dart';
 import 'dart:developer' as developer;
-import 'package:http/io_client.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 

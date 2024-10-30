@@ -5,7 +5,7 @@
         <key>method</key>
         <string>app-store</string>
         <key>teamID</key>
-        <string>YOUR_TEAM_ID</string>
+        <string>ZUL7H22F3R</string>
         <key>uploadSymbols</key>
         <true />
         <key>compileBitcode</key>
@@ -19,12 +19,10 @@
         <key>provisioningProfiles</key>
         <dict>
             <key>dk.cct5-group502.bikehero</key>
-            <string>Your_Provisioning_Profile_Name</string>
+            <string>AppStoreBikeHero</string>
         </dict>
         <key>stripSwiftSymbols</key>
         <true />
-        <key>teamID</key>
-        <string>YOUR_TEAM_ID</string>
         <key>signingCertificate</key>
         <string>Apple Distribution</string>
     </dict>

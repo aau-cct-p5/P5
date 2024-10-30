@@ -77,5 +77,5 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_IOS_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: ios-developers
+          groups: ios-testers
           file: build/ios/ipa/*.ipa

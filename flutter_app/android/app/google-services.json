@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "987974893847",
+    "project_id": "bikehero-1ed9f",
+    "storage_bucket": "bikehero-1ed9f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987974893847:android:b8b82f72102712fbb6f752",
+        "android_client_info": {
+          "package_name": "dk.cct5group502.bikehero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOATfitLAQ2HzjGYq6694d6WG5R8xsZzE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

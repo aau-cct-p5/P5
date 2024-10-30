@@ -17,29 +17,17 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -54,11 +42,46 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBDKAlIJS15g6faLkdU0EJ2RnoKucdWoRA',
-    appId: '1:987974893847:ios:b4709738e15e5e5db6f752',
+    appId: '1:987974893847:ios:267e6d2c73dea628b6f752',
     messagingSenderId: '987974893847',
     projectId: 'bikehero-1ed9f',
     storageBucket: 'bikehero-1ed9f.appspot.com',
-    iosBundleId: 'com.example.flutterApp',
+    iosBundleId: 'dk.cct5-group502.bikehero',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDWqz8GLYEEMy-UfMGmxGbcGvvM5R_249k',
+    appId: '1:987974893847:web:1cdb437073969dabb6f752',
+    messagingSenderId: '987974893847',
+    projectId: 'bikehero-1ed9f',
+    authDomain: 'bikehero-1ed9f.firebaseapp.com',
+    storageBucket: 'bikehero-1ed9f.appspot.com',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBDKAlIJS15g6faLkdU0EJ2RnoKucdWoRA',
+    appId: '1:987974893847:ios:267e6d2c73dea628b6f752',
+    messagingSenderId: '987974893847',
+    projectId: 'bikehero-1ed9f',
+    storageBucket: 'bikehero-1ed9f.appspot.com',
+    iosBundleId: 'dk.cct5-group502.bikehero',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyAOATfitLAQ2HzjGYq6694d6WG5R8xsZzE',
+    appId: '1:987974893847:android:b8b82f72102712fbb6f752',
+    messagingSenderId: '987974893847',
+    projectId: 'bikehero-1ed9f',
+    storageBucket: 'bikehero-1ed9f.appspot.com',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDWqz8GLYEEMy-UfMGmxGbcGvvM5R_249k',
+    appId: '1:987974893847:web:e8d214a3e285dbeeb6f752',
+    messagingSenderId: '987974893847',
+    projectId: 'bikehero-1ed9f',
+    authDomain: 'bikehero-1ed9f.firebaseapp.com',
+    storageBucket: 'bikehero-1ed9f.appspot.com',
   );
 
 }

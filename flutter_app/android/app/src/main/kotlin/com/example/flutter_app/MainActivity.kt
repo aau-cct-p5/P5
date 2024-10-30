@@ -1,4 +1,4 @@
-package dk.cct5-group502.bikehero
+package dk.cct5group502.bikehero
 
 import io.flutter.embedding.android.FlutterActivity
 

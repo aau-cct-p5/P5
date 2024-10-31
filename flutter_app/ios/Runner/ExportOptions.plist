@@ -18,7 +18,7 @@
         <string>export</string>
         <key>provisioningProfiles</key>
         <dict>
-            <key>dk.cct5-group502.bikehero</key>
+            <key>dk.cct5group502.bikehero</key>
             <string>AppStoreBikeHero</string>
         </dict>
         <key>stripSwiftSymbols</key>

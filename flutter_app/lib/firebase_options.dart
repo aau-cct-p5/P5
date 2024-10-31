@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '987974893847',
     projectId: 'bikehero-1ed9f',
     storageBucket: 'bikehero-1ed9f.appspot.com',
-    iosBundleId: 'dk.cct5-group502.bikehero',
+    iosBundleId: 'dk.cct5group502.bikehero',
   );
 
   static const FirebaseOptions web = FirebaseOptions(
@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '987974893847',
     projectId: 'bikehero-1ed9f',
     storageBucket: 'bikehero-1ed9f.appspot.com',
-    iosBundleId: 'dk.cct5-group502.bikehero',
+    iosBundleId: 'dk.cct5group502.bikehero',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

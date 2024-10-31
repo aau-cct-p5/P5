@@ -1,9 +1,11 @@
 #!/bin/sh
 
-# Install CocoaPods using Homebrew.
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Install CocoaPods using Homebrew
 brew install cocoapods
 
-# Install Flutter without sudo
 # Set Flutter version
 FLUTTER_VERSION="3.24.4-stable"
 
@@ -16,6 +18,9 @@ curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/mac
 # Unzip Flutter SDK
 unzip -q flutter.zip -d $HOME
 
+# Remove the zip file after extraction
+rm flutter.zip
+
 # Export Flutter to PATH
 export PATH="$PATH:$FLUTTER_DIR/bin"
 
@@ -23,10 +28,19 @@ export PATH="$PATH:$FLUTTER_DIR/bin"
 flutter doctor
 
 # Navigate to your Flutter app directory
-cd "$CI_WORKSPACE/repository/flutter_app"
+cd "/Volumes/workspace/repository/flutter_app"
 
 # Get Flutter packages
 flutter pub get
 
-# Build iOS app without code signing
+# Navigate to the iOS directory
+cd ios
+
+# Install CocoaPods dependencies
+pod install --repo-update
+
+# Navigate back to the Flutter app directory
+cd ..
+
+# Build iOS app with code signing disabled
 flutter build ios --no-codesign

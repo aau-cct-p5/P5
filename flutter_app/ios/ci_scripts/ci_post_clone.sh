@@ -3,44 +3,85 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Install CocoaPods using Homebrew
+# =============================
+# 1. Install CocoaPods
+# =============================
+
+echo "Installing CocoaPods via Homebrew..."
 brew install cocoapods
 
-# Set Flutter version
-FLUTTER_VERSION="3.24.4-stable"
+# Verify CocoaPods installation
+echo "Verifying CocoaPods installation..."
+pod --version
 
-# Set Flutter directory
-FLUTTER_DIR="$HOME/flutter"
+# =============================
+# 2. Install Flutter via Homebrew
+# =============================
 
-# Download Flutter SDK
-curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}.zip -o flutter.zip
-
-# Unzip Flutter SDK
-unzip -q flutter.zip -d $HOME
-
-# Remove the zip file after extraction
-rm flutter.zip
-
-# Export Flutter to PATH
-export PATH="$PATH:$FLUTTER_DIR/bin"
+echo "Installing Flutter via Homebrew..."
+brew install flutter
 
 # Verify Flutter installation
+echo "Verifying Flutter installation..."
+flutter --version
+
+# Ensure Flutter is on PATH (Homebrew typically adds it automatically)
+# If not, uncomment the following line to add it manually
+# export PATH="$PATH:$(brew --prefix flutter)/bin"
+
+# =============================
+# 3. Setup Flutter Environment
+# =============================
+
+echo "Running flutter doctor..."
 flutter doctor
 
-# Navigate to your Flutter app directory
-cd "/Volumes/workspace/repository/flutter_app"
+# =============================
+# 4. Navigate to Flutter App Directory
+# =============================
 
-# Get Flutter packages
+# Update this path if your repository structure differs
+FLUTTER_APP_DIR="/Volumes/workspace/repository/flutter_app"
+
+echo "Navigating to Flutter app directory: $FLUTTER_APP_DIR"
+cd "$FLUTTER_APP_DIR"
+
+# =============================
+# 5. Get Flutter Dependencies
+# =============================
+
+echo "Fetching Flutter dependencies..."
 flutter pub get
 
-# Navigate to the iOS directory
+# =============================
+# 6. Prepare iOS Environment
+# =============================
+
+echo "Navigating to iOS directory..."
 cd ios
 
-# Install CocoaPods dependencies
+echo "Installing CocoaPods dependencies..."
 pod install --repo-update
 
-# Navigate back to the Flutter app directory
+# Optionally, you can add debug steps to verify pod installation
+echo "Listing installed CocoaPods..."
+pod list
+
+# Navigate back to Flutter app directory
 cd ..
 
-# Build iOS app with code signing disabled
+# =============================
+# 7. Build iOS Application
+# =============================
+
+echo "Building iOS application without code signing..."
 flutter build ios --no-codesign
+
+# Optionally, you can add verbose logging for debugging
+# flutter build ios --no-codesign --verbose
+
+# =============================
+# 8. Finalize
+# =============================
+
+echo "CI Post Clone Script Execution Completed Successfully."

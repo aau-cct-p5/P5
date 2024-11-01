@@ -3,6 +3,8 @@ name: "Build and Publish Android App"
 on:
   release:
     types: [published]
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -17,10 +19,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: '11'
-          
-      - name: Install yq
-        run: sudo apt-get update && sudo apt-get install -y yq
+          java-version: '17'
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -67,7 +66,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download APK artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: release-apk
 

@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "987974893847",
     "project_id": "bikehero-1ed9f",
-    "storage_bucket": "bikehero-1ed9f.appspot.com"
+    "storage_bucket": "bikehero-1ed9f.firebasestorage.app"
   },
   "client": [
     {

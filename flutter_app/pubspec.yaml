@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: 3.5.0
+  sdk: ">=3.5.0 <4.0.0"
   flutter: 3.24.0
 
 # Dependencies specify other packages that your package needs in order to work.
@@ -39,6 +39,7 @@ dependencies:
   flutter_map: ^7.0.2
   http: ^1.2.1
   elastic_client: ^0.3.15
+  firebase_core: ^3.6.0
   
 dev_dependencies:
   flutter_test:

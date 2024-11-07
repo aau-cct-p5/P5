@@ -1,4 +1,4 @@
-# 🚴‍♂️ Bike Lane Guardian 🚴‍♀️
+# Bike Hero
 
 ![Flutter](https://img.shields.io/badge/Flutter-Framework-blue)
 ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Powered-brightgreen)

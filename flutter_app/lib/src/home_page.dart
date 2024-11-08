@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _writtenSamples = 0; // Add state variable for written samples count
   bool _isCycling = false; // Add state variable to track cycling status
   StreamSubscription<fr.Activity>? _activitySubscription; // Add activity subscription
-  String _currentActivity = 'Unknown'; // Add state variable for current activity
+  fr.ActivityType _currentActivity = fr.ActivityType.UNKNOWN; // Add state variable for current activity
 
   // List to store historic data temporarily
   final List<HistoricData> _tempHistoricData = [];
@@ -271,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _isCycling = true;
           _isCollectingData = true;
-          _currentActivity = 'Cycling'; // Update current activity
+          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity
         });
         _startDataCollection();
         developer.log('Cycling detected. Data collection started automatically.');
@@ -284,7 +284,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _isCycling = false;
           _isCollectingData = false;
-          _currentActivity = activity.type.toString(); // Update current activity
+          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity
         });
         _stopDataCollection();
         developer.log('Cycling stopped. Data collection stopped automatically.');
@@ -293,7 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ); // Add SnackBar for cycling stop
       } else {
         setState(() {
-          _currentActivity = activity.type.toString(); // Update current activity for other activities
+          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity for other activities
         });
         developer.log('Activity detected: ${_currentActivity}');
       }
@@ -420,7 +420,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Text('Written Samples: $_writtenSamples'), // Add written samples statistic
                     const SizedBox(height: 20),
                     const Text('Current Activity:'),
-                    Text(_currentActivity),
+                    Text(_currentActivity.toString()),
                     const SizedBox(height: 20),
                     // Hide the toggle button if cycling is detected
                     if (!_isCycling) 

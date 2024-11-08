@@ -23,45 +23,48 @@ class _MyHomePageState extends State<MyHomePage> {
   AccelerometerEvent? _accelerometerEvent;
   GyroscopeEvent? _gyroscopeEvent;
   final MapController _mapController = MapController();
-  final double _currentZoom = 15.0;
+  final double _currentZoom = 20.0;
   late Future<void> _initialPositionFuture;
+  bool _isCollectingData = false;
 
-  // List to store historic data
-  final List<HistoricData> _historicData = [];
+  // List to store historic data temporarily
+  final List<HistoricData> _tempHistoricData = [];
   Timer? _throttleTimer;
   Timer? _minuteTimer; // Timer to send data every minute
+
+  // Add stream subscriptions
+  StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
   @override
   void initState() {
     super.initState();
     _initialPositionFuture = _requestPermissionsAndGetInitialPosition();
-
-    // Set up a timer to send data every minute
-    _minuteTimer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
-      _sendHistoricData();
-    });
   }
 
   @override
   void dispose() {
     _minuteTimer?.cancel(); // Cancel the timer when the widget is disposed
+    _positionSubscription?.cancel();
+    _accelerometerSubscription?.cancel();
+    _gyroscopeSubscription?.cancel();
     super.dispose();
   }
 
   Future<void> _requestPermissionsAndGetInitialPosition() async {
     final status = await [
       Permission.locationWhenInUse,
-      Permission.location
+      Permission.location,
+      Permission.locationAlways, // Request always permission for background
     ].request();
 
     if (status[Permission.locationWhenInUse]!.isGranted &&
-        status[Permission.location]!.isGranted) {
+        status[Permission.location]!.isGranted &&
+        status[Permission.locationAlways]!.isGranted) {
       await _getInitialPosition();
-      _listenToLocationChanges();
-      _listenToSensors();
     } else {
-      // Handle the case when the permission is not granted
-      developer.log('Location permission not granted');
+      developer.log('Location permissions not fully granted');
     }
   }
 
@@ -70,7 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      developer.log('Initial position: ${position.latitude}, ${position.longitude}');
+      developer
+          .log('Initial position: ${position.latitude}, ${position.longitude}');
       setState(() {
         _currentPosition = position;
       });
@@ -79,42 +83,46 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _listenToLocationChanges() {
-    Geolocator.getPositionStream(
+  StreamSubscription<Position> _listenToLocationChanges() {
+    return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10,
       ),
     ).listen((Position position) {
-      developer.log('New position: ${position.latitude}, ${position.longitude}');
+      developer
+          .log('New position: ${position.latitude}, ${position.longitude}');
       setState(() {
         _currentPosition = position;
         if (_mapController.mapEventStream.isBroadcast) {
           _mapController.move(
               LatLng(position.latitude, position.longitude), _currentZoom);
         }
-        _throttleSaveHistoricData();
       });
+      _throttleSaveHistoricData();
     });
   }
 
-  void _listenToSensors() {
-    accelerometerEvents.listen((AccelerometerEvent event) {
+  StreamSubscription<AccelerometerEvent> _listenToAccelerometer() {
+    return accelerometerEvents.listen((AccelerometerEvent event) {
       setState(() {
         _accelerometerEvent = event;
-        _throttleSaveHistoricData();
       });
+      _throttleSaveHistoricData();
     });
+  }
 
-    gyroscopeEvents.listen((GyroscopeEvent event) {
+  StreamSubscription<GyroscopeEvent> _listenToGyroscope() {
+    return gyroscopeEvents.listen((GyroscopeEvent event) {
       setState(() {
         _gyroscopeEvent = event;
-        _throttleSaveHistoricData();
       });
+      _throttleSaveHistoricData();
     });
   }
 
   void _throttleSaveHistoricData() {
+    if (!_isCollectingData) return;
     if (_throttleTimer?.isActive ?? false) return;
 
     _throttleTimer = Timer(const Duration(seconds: 1), () {
@@ -123,37 +131,64 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _saveHistoricData() {
-    if (_currentPosition != null && _accelerometerEvent != null && _gyroscopeEvent != null) {
+    if (_currentPosition != null &&
+        _accelerometerEvent != null &&
+        _gyroscopeEvent != null) {
       final data = HistoricData(
         timestamp: DateTime.now(),
         position: _currentPosition!,
         accelerometerEvent: _accelerometerEvent!,
         gyroscopeEvent: _gyroscopeEvent!,
       );
-      _historicData.add(data);
+      _tempHistoricData.add(data);
     }
   }
 
-    // Method to send all historic data to the server every minute
-  Future<void> _sendHistoricData() async {
-    if (_historicData.isEmpty) {
-      developer.log('No data to send');
+  // Method to append all temporary historic data to the file every 5 seconds
+  Future<void> _appendHistoricDataToFile() async {
+    if (_tempHistoricData.isEmpty) {
+      developer.log('No data to append');
       return;
     }
 
     try {
-      final List<HistoricData> dataToSend = List.from(_historicData);
-      for (var data in dataToSend) {
-        await sendDataToServer(data); // Send all data in batch
+      final List<HistoricData> dataToAppend = List.from(_tempHistoricData);
+      for (var data in dataToAppend) {
+        await writeDataToFile(data); // Write data to file
       }
-      developer.log('All historic data sent successfully');
+      developer.log('All temporary historic data written to file successfully');
 
-      // Optionally clear the list after sending
+      // Clear the temporary list after writing
       setState(() {
-        _historicData.clear();
+        _tempHistoricData.clear();
       });
     } catch (e) {
-      developer.log('Error sending historic data: $e');
+      developer.log('Error writing temporary historic data to file: $e');
+    }
+  }
+
+  void _toggleDataCollection() {
+    setState(() {
+      _isCollectingData = !_isCollectingData;
+    });
+
+    if (_isCollectingData) {
+      // Start data collection
+      _positionSubscription = _listenToLocationChanges();
+      _accelerometerSubscription = _listenToAccelerometer();
+      _gyroscopeSubscription = _listenToGyroscope();
+      _minuteTimer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+        _appendHistoricDataToFile();
+      });
+    } else {
+      // Stop data collection
+      _positionSubscription?.cancel();
+      _accelerometerSubscription?.cancel();
+      _gyroscopeSubscription?.cancel();
+      _positionSubscription = null;
+      _accelerometerSubscription = null;
+      _gyroscopeSubscription = null;
+      _minuteTimer?.cancel();
     }
   }
 
@@ -223,8 +258,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           TileLayer(
                             urlTemplate:
-                                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            subdomains: const ['a', 'b', 'c'],
+                                'https://tiles-eu.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}@2x.png',
+                            fallbackUrl:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            maxNativeZoom: 20,
+                            maxZoom: 20,
                           ),
                           MarkerLayer(
                             markers: [
@@ -248,19 +286,35 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 20),
                   const Text('Historic Data:'),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: _historicData.length,
-                      itemBuilder: (context, index) {
-                        final data = _historicData[index];
-                        return ListTile(
-                          title: Text(
-                              'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
-                          subtitle: Text(
-                              'Acc: X=${data.accelerometerEvent.x}, Y=${data.accelerometerEvent.y}, Z=${data.accelerometerEvent.z}\n'
-                              'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
-                        );
-                      },
+                    child: SingleChildScrollView(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _tempHistoricData.length,
+                        itemBuilder: (context, index) {
+                          final data = _tempHistoricData[index];
+                          return ListTile(
+                            title: Text(
+                                'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
+                            subtitle: Text(
+                                'Acc: X=${data.accelerometerEvent.x}, Y=${data.accelerometerEvent.y}, Z=${data.accelerometerEvent.z}\n'
+                                'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
+                          );
+                        },
+                      ),
                     ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _toggleDataCollection,
+                    child: Text(_isCollectingData
+                        ? 'Stop Data Collection'
+                        : 'Start Data Collection'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await sendDataToServer();
+                    },
+                    child: const Text('Send Data to Server'),
                   ),
                 ],
               );

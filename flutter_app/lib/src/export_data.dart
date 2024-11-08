@@ -1,12 +1,10 @@
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'HistoricData.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/services.dart' show rootBundle;
-
-
 
 Map<String, dynamic> prepareData(HistoricData data) {
   return {
@@ -35,26 +33,70 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
+Future<File> _getLocalFile() async {
+  final directory = await getApplicationDocumentsDirectory();
+  return File('${directory.path}/measurements.txt');
+}
 
-Future<void> sendDataToServer(HistoricData data) async {
-  final url = Uri.parse('https://elastic.mcmogens.dk/bikehero-data-stream/_doc'); // Elastic receiver
-  final headers = {'Content-Type': 'application/json', 'Authorization': 'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='};
+Future<void> writeDataToFile(HistoricData data) async {
+  final file = await _getLocalFile();
+  final body = jsonEncode(prepareData(data));
+  await file.writeAsString('$body\n', mode: FileMode.append);
+}
 
-  try {
-    final body = jsonEncode(prepareData(data));  // Convert data to JSON
+Future<void> sendDataToServer() async {
+  developer.log('Starting to send data to server.');
+  
+  final file = await _getLocalFile();
+  if (!await file.exists()) {
+    developer.log('No data to send.');
+    return;
+  }
 
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: body,
-    );
-    
-    if (response.statusCode == 201) {
-      developer.log('Data sent successfully: ${response.body}');
-    } else {
-      developer.log('Failed to send data. Status code: ${response.statusCode}');
+  final lines = await file.readAsLines();
+  developer.log('Number of data entries to send: ${lines.length}');
+  
+  final url = Uri.parse(
+      'https://elastic.mcmogens.dk/bikehero-data-stream/_doc'); // Elastic receiver
+  final headers = {
+    'Content-Type': 'application/json',
+    'Authorization':
+        'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='
+  };
+
+  final remainingLines = <String>[];
+  int successCount = 0;
+
+  for (final line in lines) {
+    try {
+      developer.log('Sending data: $line');
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: line,
+      );
+
+      if (response.statusCode == 201) {
+        developer.log('Data sent successfully: ${response.body}');
+        successCount++;
+      } else {
+        developer.log(
+            'Failed to send data. Status code: ${response.statusCode}. Body: ${response.body}');
+        remainingLines.add(line);
+      }
+    } catch (e) {
+      developer.log('Error sending data: $e');
+      remainingLines.add(line);
     }
-  } catch (e) {
-    developer.log('Error sending data: $e');
+  }
+
+  if (remainingLines.isEmpty) {
+    await file.delete();
+    developer.log(
+        'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+  } else {
+    await file.writeAsString(remainingLines.join('\n'));
+    developer.log(
+        '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
   }
 }

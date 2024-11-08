@@ -8,6 +8,7 @@ import 'dart:async';
 import 'HistoricData.dart';
 import 'export_data.dart';
 import 'dart:developer' as developer;
+import 'map.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -245,43 +246,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   const SizedBox(height: 20),
                   if (_currentPosition != null)
-                    SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: FlutterMap(
-                        mapController: _mapController,
-                        options: MapOptions(
-                          initialCenter: LatLng(_currentPosition!.latitude,
-                              _currentPosition!.longitude),
-                          initialZoom: _currentZoom,
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://tiles-eu.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}@2x.png',
-                            fallbackUrl:
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            maxNativeZoom: 20,
-                            maxZoom: 20,
-                          ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                point: LatLng(_currentPosition!.latitude,
-                                    _currentPosition!.longitude),
-                                child: const SizedBox(
-                                  width: 40.0,
-                                  height: 40.0,
-                                  child: Icon(
-                                    Icons.location_on,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    MapWidget(
+                      mapController: _mapController,
+                      currentPosition: _currentPosition!,
+                      currentZoom: _currentZoom,
                     ),
                   const SizedBox(height: 20),
                   const Text('Historic Data:'),

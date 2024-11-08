@@ -44,13 +44,13 @@ Future<void> writeDataToFile(HistoricData data) async {
   await file.writeAsString('$body\n', mode: FileMode.append);
 }
 
-Future<void> sendDataToServer() async {
+Future<int> sendDataToServerFromExportData() async { // Modify return type to int
   developer.log('Starting to send data to server.');
   
   final file = await _getLocalFile();
   if (!await file.exists()) {
     developer.log('No data to send.');
-    return;
+    return 0;
   }
 
   final lines = await file.readAsLines();
@@ -91,12 +91,18 @@ Future<void> sendDataToServer() async {
   }
 
   if (remainingLines.isEmpty) {
-    await file.delete();
-    developer.log(
-        'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+    try {
+      await file.delete();
+      developer.log(
+          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+    } catch (e) {
+      developer.log('Error deleting file: $e');
+    }
   } else {
     await file.writeAsString(remainingLines.join('\n'));
     developer.log(
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
   }
+
+  return successCount; // Return the number of successfully sent samples
 }

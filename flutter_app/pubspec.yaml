@@ -41,7 +41,8 @@ dependencies:
   http: ^1.2.1
   elastic_client: ^0.3.15
   firebase_core: ^3.6.0
-  
+  flutter_activity_recognition: ^4.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

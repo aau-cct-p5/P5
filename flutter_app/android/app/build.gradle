@@ -1,3 +1,15 @@
+buildscript {
+    ext.kotlin_version = '1.8.0' // Use the latest compatible Kotlin version
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.15' // Ensure google-services is applied
+    }
+}
+
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
@@ -14,12 +26,12 @@ android {
     ndkVersion = "25.1.8937393"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "11"
     }
 
     defaultConfig {
@@ -27,7 +39,7 @@ android {
         applicationId = "dk.cct5group502.bikehero"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdkVersion 21 // Update to 21 or higher if required by the plugin
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -49,4 +61,6 @@ flutter {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation platform('com.google.firebase:firebase-bom:29.0.3')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version" // Ensure 'kotlin_version' is defined
+    implementation 'com.google.android.gms:play-services-location:21.0.1' // Re-add this line
 }

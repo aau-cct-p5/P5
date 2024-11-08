@@ -1,5 +1,1 @@
-package dk.cct5group502.bikehero
-
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity: FlutterActivity()
+// Delete this file to prevent redeclaration of MainActivity

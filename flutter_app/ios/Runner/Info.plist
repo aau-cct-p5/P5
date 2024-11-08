@@ -53,5 +53,7 @@
     <string>We need your location to show sensor data.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We need your location to show sensor data.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Used to recognize user activity information.</string>
 </dict>
 </plist>

@@ -47,6 +47,10 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+    </array>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>We need your location to show sensor data.</string>
     <key>NSLocationAlwaysUsageDescription</key>

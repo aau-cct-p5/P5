@@ -12,6 +12,7 @@ import 'map.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart' as fr;
+import 'permissions/activity.dart'; // Import the new activity permission file
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -49,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _initialPositionFuture = _requestPermissionsAndGetInitialPosition();
+    _initialPositionFuture = _getInitialPosition(); // Update to directly get initial position
     _updateWrittenSamples(); // Initialize written samples count
     _subscribeActivityStream(); // Subscribe to activity stream
   }
@@ -62,22 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _gyroscopeSubscription?.cancel();
     _activitySubscription?.cancel(); // Cancel activity subscription
     super.dispose();
-  }
-
-  Future<void> _requestPermissionsAndGetInitialPosition() async {
-    final status = await [
-      Permission.locationWhenInUse,
-      Permission.location,
-      Permission.locationAlways, // Request always permission for background
-    ].request();
-
-    if (status[Permission.locationWhenInUse]!.isGranted &&
-        status[Permission.location]!.isGranted &&
-        status[Permission.locationAlways]!.isGranted) {
-      await _getInitialPosition();
-    } else {
-      developer.log('Location permissions not fully granted');
-    }
   }
 
   Future<void> _getInitialPosition() async {
@@ -238,25 +223,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<bool> _checkAndRequestActivityPermission() async {
-    fr.ActivityPermission permission =
-        await fr.FlutterActivityRecognition.instance.checkPermission();
-    if (permission == fr.ActivityPermission.PERMANENTLY_DENIED) {
-      // Permission has been permanently denied.
-      return false;
-    } else if (permission == fr.ActivityPermission.DENIED) {
-      permission =
-          await fr.FlutterActivityRecognition.instance.requestPermission();
-      if (permission != fr.ActivityPermission.GRANTED) {
-        // Permission is denied.
-        return false;
-      }
-    }
-    return true;
-  }
-
   void _subscribeActivityStream() async {
-    bool hasPermission = await _checkAndRequestActivityPermission();
+    bool hasPermission = await checkAndRequestActivityPermission(); // Use the new method
     if (hasPermission) {
       _activitySubscription = fr.FlutterActivityRecognition.instance.activityStream
           .listen(_onActivityChange, onError: _onActivityError);

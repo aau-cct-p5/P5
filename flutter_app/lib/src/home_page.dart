@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/data_collection/collect_data.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -6,12 +7,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'HistoricData.dart';
-import 'export_data.dart';
+import 'data_export/export_data.dart';
 import 'dart:developer' as developer;
 import 'map.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:flutter_activity_recognition/flutter_activity_recognition.dart' as fr;
+import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
+    as fr;
 import 'permissions/activity.dart'; // Import the new activity permission file
 
 class MyHomePage extends StatefulWidget {
@@ -34,8 +36,10 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isMapVisible = true; // Add state variable for map visibility
   int _writtenSamples = 0; // Add state variable for written samples count
   bool _isCycling = false; // Add state variable to track cycling status
-  StreamSubscription<fr.Activity>? _activitySubscription; // Add activity subscription
-  fr.ActivityType _currentActivity = fr.ActivityType.UNKNOWN; // Add state variable for current activity
+  StreamSubscription<fr.Activity>?
+      _activitySubscription; // Add activity subscription
+  fr.ActivityType _currentActivity =
+      fr.ActivityType.UNKNOWN; // Add state variable for current activity
 
   // List to store historic data temporarily
   final List<HistoricData> _tempHistoricData = [];
@@ -50,7 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _initialPositionFuture = _getInitialPosition(); // Update to directly get initial position
+    _initialPositionFuture =
+        _getInitialPosition(); // Update to directly get initial position
     _updateWrittenSamples(); // Initialize written samples count
     _subscribeActivityStream(); // Subscribe to activity stream
   }
@@ -177,21 +182,24 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _toggleDebugVisibility() { // Add method to toggle debug visibility
+  void _toggleDebugVisibility() {
+    // Add method to toggle debug visibility
     setState(() {
       _isDebugVisible = !_isDebugVisible;
     });
   }
 
-  void _toggleMapVisibility() { // Add method to toggle map visibility
+  void _toggleMapVisibility() {
+    // Add method to toggle map visibility
     setState(() {
       _isMapVisible = !_isMapVisible;
     });
   }
 
-  Future<void> _updateWrittenSamples() async { // Add method to update written samples count
+  Future<void> _updateWrittenSamples() async {
+    // Add method to update written samples count
     try {
-      final file = await _getLocalFile();
+      final file = await getLocalFile();
       if (await file.exists()) {
         final lines = await file.readAsLines();
         setState(() {
@@ -207,44 +215,48 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<File> _getLocalFile() async { // Add helper method to get the local file
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/measurements.txt');
-  }
-
-  Future<void> sendDataToServer() async { // Modify sendDataToServer to update written samples
+  Future<void> sendDataToServer() async {
+    // Modify sendDataToServer to update written samples
     await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _updateWrittenSamples(); // Update the written samples count after sending
   }
 
-  Future<void> _appendWrittenSamplesCount() async { // Add method to increment written samples count
+  Future<void> _appendWrittenSamplesCount() async {
+    // Add method to increment written samples count
     setState(() {
       _writtenSamples += 1;
     });
   }
 
   void _subscribeActivityStream() async {
-    bool hasPermission = await checkAndRequestActivityPermission(); // Use the new method
+    bool hasPermission =
+        await checkAndRequestActivityPermission(); // Use the new method
     if (hasPermission) {
-      _activitySubscription = fr.FlutterActivityRecognition.instance.activityStream
+      _activitySubscription = fr
+          .FlutterActivityRecognition.instance.activityStream
           .listen(_onActivityChange, onError: _onActivityError);
     } else {
       developer.log('Activity recognition permission not granted.');
     }
   }
 
-  void _onActivityChange(fr.Activity activity) { // Use alias
-    if (activity.type == fr.ActivityType.ON_BICYCLE) { // Use alias
+  void _onActivityChange(fr.Activity activity) {
+    // Use alias
+    if (activity.type == fr.ActivityType.ON_BICYCLE) {
+      // Use alias
       if (!_isCycling) {
         setState(() {
           _isCycling = true;
           _isCollectingData = true;
-          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity
+          _currentActivity =
+              fr.ActivityType.ON_BICYCLE; // Update current activity
         });
         _startDataCollection();
-        developer.log('Cycling detected. Data collection started automatically.');
+        developer
+            .log('Cycling detected. Data collection started automatically.');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cycling started. Data collection initiated.')),
+          const SnackBar(
+              content: Text('Cycling started. Data collection initiated.')),
         ); // Add SnackBar for cycling start
       }
     } else {
@@ -252,16 +264,20 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _isCycling = false;
           _isCollectingData = false;
-          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity
+          _currentActivity =
+              fr.ActivityType.ON_BICYCLE; // Update current activity
         });
         _stopDataCollection();
-        developer.log('Cycling stopped. Data collection stopped automatically.');
+        developer
+            .log('Cycling stopped. Data collection stopped automatically.');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cycling stopped. Data collection halted.')),
+          const SnackBar(
+              content: Text('Cycling stopped. Data collection halted.')),
         ); // Add SnackBar for cycling stop
       } else {
         setState(() {
-          _currentActivity = fr.ActivityType.ON_BICYCLE; // Update current activity for other activities
+          _currentActivity = fr.ActivityType
+              .ON_BICYCLE; // Update current activity for other activities
         });
         developer.log('Activity detected: ${_currentActivity}');
       }
@@ -276,8 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _positionSubscription = _listenToLocationChanges();
     _accelerometerSubscription = _listenToAccelerometer();
     _gyroscopeSubscription = _listenToGyroscope();
-    _minuteTimer =
-        Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+    _minuteTimer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       _appendHistoricDataToFile();
     });
   }
@@ -300,7 +315,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: [
           IconButton(
-            icon: Icon(_isDebugVisible ? Icons.visibility_off : Icons.visibility),
+            icon:
+                Icon(_isDebugVisible ? Icons.visibility_off : Icons.visibility),
             onPressed: _toggleDebugVisibility,
           ),
           IconButton(
@@ -344,7 +360,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           return Text(
                               'X: ${event.x}, Y: ${event.y}, Z: ${event.z}');
                         } else {
-                          return const Text('Waiting for accelerometer data...');
+                          return const Text(
+                              'Waiting for accelerometer data...');
                         }
                       },
                     ),
@@ -368,7 +385,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: SingleChildScrollView(
                         child: ListView.builder(
                           shrinkWrap: true,
-
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: _tempHistoricData.length,
                           itemBuilder: (context, index) {
@@ -384,14 +400,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                    Text('Samples in Memory: ${_tempHistoricData.length}'), // Existing samples count
-                    Text('Written Samples: $_writtenSamples'), // Add written samples statistic
+                    Text(
+                        'Samples in Memory: ${_tempHistoricData.length}'), // Existing samples count
+                    Text(
+                        'Written Samples: $_writtenSamples'), // Add written samples statistic
                     const SizedBox(height: 20),
                     const Text('Current Activity:'),
                     Text(_currentActivity.toString()),
                     const SizedBox(height: 20),
                     // Hide the toggle button if cycling is detected
-                    if (!_isCycling) 
+                    if (!_isCycling)
                       ElevatedButton(
                         onPressed: _toggleDataCollection,
                         child: Text(_isCollectingData
@@ -407,7 +425,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                   // Add Bicycle Icon indicating cycling status
                   Icon(
-                    _isCycling ? Icons.directions_bike : Icons.directions_bike_outlined,
+                    _isCycling
+                        ? Icons.directions_bike
+                        : Icons.directions_bike_outlined,
                     color: _isCycling ? Colors.green : Colors.grey,
                     size: 48.0,
                   ),

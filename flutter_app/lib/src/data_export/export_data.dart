@@ -2,9 +2,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
-import 'HistoricData.dart';
+import '../HistoricData.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/services.dart' show rootBundle;
+import '../data_collection/collect_data.dart';
 
 Map<String, dynamic> prepareData(HistoricData data) {
   return {
@@ -33,21 +34,11 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
-Future<File> _getLocalFile() async {
-  final directory = await getApplicationDocumentsDirectory();
-  return File('${directory.path}/measurements.txt');
-}
 
-Future<void> writeDataToFile(HistoricData data) async {
-  final file = await _getLocalFile();
-  final body = jsonEncode(prepareData(data));
-  await file.writeAsString('$body\n', mode: FileMode.append);
-}
-
-Future<int> sendDataToServerFromExportData() async { // Modify return type to int
+Future<int> sendDataToServerFromExportData() async {
   developer.log('Starting to send data to server.');
   
-  final file = await _getLocalFile();
+  final file = await getLocalFile();
   if (!await file.exists()) {
     developer.log('No data to send.');
     return 0;

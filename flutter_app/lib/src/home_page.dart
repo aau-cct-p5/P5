@@ -15,6 +15,8 @@ import 'dart:io';
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
     as fr;
 import 'permissions/activity.dart'; // Import the new activity permission file
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -274,6 +276,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const SnackBar(
               content: Text('Cycling stopped. Data collection halted.')),
         ); // Add SnackBar for cycling stop
+        _checkIfConnected();
       } else {
         setState(() {
           _currentActivity = fr.ActivityType
@@ -281,6 +284,16 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         developer.log('Activity detected: ${_currentActivity}');
       }
+    }
+  }
+
+  Future<void> _checkIfConnected() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if(connectivityResult == ConnectivityResult.wifi) {
+      developer.log('Connected, sending data...');
+      sendDataToServer();
+    } else {
+      developer.log('Not connected to wifi, trying again later...');
     }
   }
 

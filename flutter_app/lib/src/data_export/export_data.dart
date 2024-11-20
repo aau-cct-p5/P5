@@ -35,10 +35,9 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
-
 Future<int> sendDataToServerFromExportData() async {
   developer.log('Starting to send data to server.');
-  
+
   final file = await getLocalFile();
   if (!await file.exists()) {
     developer.log('No data to send.');
@@ -47,9 +46,7 @@ Future<int> sendDataToServerFromExportData() async {
 
   final lines = await file.readAsLines();
   developer.log('Number of data entries to send: ${lines.length}');
-  
-  final url = Uri.parse(
-      'https://elastic.mcmogens.dk/bikehero-data-stream/_doc'); // Elastic receiver
+
   final headers = {
     'Content-Type': 'application/json',
     'Authorization':
@@ -59,30 +56,18 @@ Future<int> sendDataToServerFromExportData() async {
   final remainingLines = <String>[];
   int successCount = 0;
 
-  for (final line in lines) {
-    try {
-      developer.log('Sending data: $line');
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: line,
-      );
+  final bulkBody =
+      '${lines.expand((line) => ['{"create":{}}', line]).join('\n')}\n';
+  final bulkUrl = Uri.parse(
+      'https://elastic.mcmogens.dk/bikehero-data-stream/_bulk?refresh');
+  final response = await http.post(
+    bulkUrl,
+    headers: headers,
+    body: bulkBody,
+  );
 
-      if (response.statusCode == 201) {
-        developer.log('Data sent successfully: ${response.body}');
-        successCount++;
-      } else {
-        developer.log(
-            'Failed to send data. Status code: ${response.statusCode}. Body: ${response.body}');
-        remainingLines.add(line);
-      }
-    } catch (e) {
-      developer.log('Error sending data: $e');
-      remainingLines.add(line);
-    }
-  }
-
-  if (remainingLines.isEmpty) {
+  if (response.statusCode == 200) {
+    developer.log('Bulk data sent successfully.');
     try {
       await file.delete();
       developer.log(
@@ -91,6 +76,8 @@ Future<int> sendDataToServerFromExportData() async {
       developer.log('Error deleting file: $e');
     }
   } else {
+    developer
+        .log('Failed to send bulk data. Status code: ${response.statusCode}.');
     await file.writeAsString(remainingLines.join('\n'));
     developer.log(
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');

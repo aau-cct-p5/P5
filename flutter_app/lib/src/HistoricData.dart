@@ -7,18 +7,18 @@ import 'dart:math';
 class HistoricData {
   final DateTime timestamp;
   final Position position;
-  final AccelerometerEvent accelerometerEvent;
+  final UserAccelerometerEvent userAccelerometerEvent; // UserAccelerometerEvent filters out gravity
   final GyroscopeEvent gyroscopeEvent;
   final double rmsAcceleration;
 
   HistoricData({
     required this.timestamp,
     required this.position,
-    required this.accelerometerEvent,
+    required this.userAccelerometerEvent,
     required this.gyroscopeEvent,
   }) : rmsAcceleration = sqrt(
-          accelerometerEvent.x * accelerometerEvent.x +
-              accelerometerEvent.y * accelerometerEvent.y +
-              accelerometerEvent.z * accelerometerEvent.z,
+          userAccelerometerEvent.x * userAccelerometerEvent.x +
+              userAccelerometerEvent.y * userAccelerometerEvent.y +
+              userAccelerometerEvent.z * userAccelerometerEvent.z,
         );
 }

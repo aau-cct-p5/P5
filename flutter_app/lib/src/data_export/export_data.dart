@@ -15,9 +15,9 @@ Map<String, dynamic> prepareData(HistoricData data) {
       'lon': data.position.longitude,
     },
     'accelerometer': {
-      'x': data.accelerometerEvent.x,
-      'y': data.accelerometerEvent.y,
-      'z': data.accelerometerEvent.z,
+      'x': data.userAccelerometerEvent.x,
+      'y': data.userAccelerometerEvent.y,
+      'z': data.userAccelerometerEvent.z,
     },
     'gyroscope': {
       'x': data.gyroscopeEvent.x,

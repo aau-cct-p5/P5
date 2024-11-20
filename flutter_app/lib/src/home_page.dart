@@ -17,7 +17,6 @@ import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
 import 'permissions/activity.dart'; // Import the new activity permission file
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -28,7 +27,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Position? _currentPosition;
-  AccelerometerEvent? _accelerometerEvent;
+  UserAccelerometerEvent? _userAccelerometerEvent;
   GyroscopeEvent? _gyroscopeEvent;
   final MapController _mapController = MapController();
   final double _currentZoom = 20.0;
@@ -50,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Add stream subscriptions
   StreamSubscription<Position>? _positionSubscription;
-  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
   @override
@@ -107,10 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  StreamSubscription<AccelerometerEvent> _listenToAccelerometer() {
-    return accelerometerEvents.listen((AccelerometerEvent event) {
+  StreamSubscription<UserAccelerometerEvent> _listenToAccelerometer() {
+    return userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       setState(() {
-        _accelerometerEvent = event;
+        _userAccelerometerEvent = event;
       });
       _throttleSaveHistoricData();
     });
@@ -136,12 +135,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _saveHistoricData() {
     if (_currentPosition != null &&
-        _accelerometerEvent != null &&
+        _userAccelerometerEvent != null &&
         _gyroscopeEvent != null) {
       final data = HistoricData(
         timestamp: DateTime.now(),
         position: _currentPosition!,
-        accelerometerEvent: _accelerometerEvent!,
+        userAccelerometerEvent: _userAccelerometerEvent!,
         gyroscopeEvent: _gyroscopeEvent!,
       );
       _tempHistoricData.add(data);
@@ -289,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _checkIfConnected() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
-    if(connectivityResult == ConnectivityResult.wifi) {
+    if (connectivityResult == ConnectivityResult.wifi) {
       developer.log('Connected, sending data...');
       sendDataToServer();
     } else {
@@ -365,8 +364,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           'Lat: ${_currentPosition!.latitude}, Lon: ${_currentPosition!.longitude}'),
                     const SizedBox(height: 20),
                     const Text('Accelerometer Data:'),
-                    StreamBuilder<AccelerometerEvent>(
-                      stream: accelerometerEvents,
+                    StreamBuilder<UserAccelerometerEvent>(
+                      stream: userAccelerometerEvents,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           final event = snapshot.data!;
@@ -406,7 +405,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               title: Text(
                                   'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
                               subtitle: Text(
-                                  'Acc: X=${data.accelerometerEvent.x}, Y=${data.accelerometerEvent.y}, Z=${data.accelerometerEvent.z}\n'
+                                  'Acc: X=${data.userAccelerometerEvent.x}, Y=${data.userAccelerometerEvent.y}, Z=${data.userAccelerometerEvent.z}\n'
                                   'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
                             );
                           },

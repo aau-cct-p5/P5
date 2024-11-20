@@ -45,7 +45,8 @@ index_template_body = {
                     }
                 },
                 "user_id": {"type": "keyword"},
-                "device_id": {"type": "keyword"}
+                "device_id": {"type": "keyword"},
+                "AccelerationRMS": {"type": "float"}
             }
         }
     }

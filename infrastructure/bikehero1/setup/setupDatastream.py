@@ -44,13 +44,12 @@ index_template_body = {
                         "z": {"type": "float"}
                     }
                 },
-                "user_id": {"type": "keyword"},
-                "device_id": {"type": "keyword"},
-                "AccelerationRMS": {"type": "float"}
+                "rmsAcceleration": {"type": "float"}
             }
         }
     }
 }
+
 
 # Function to create the index template
 def create_index_template():

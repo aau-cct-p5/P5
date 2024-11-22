@@ -57,6 +57,9 @@ jobs:
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
 
   release:
+    permissions:
+      contents: read
+
     name: Create GitHub Release and Upload APK
     needs: [build]
     runs-on: ubuntu-latest

@@ -57,7 +57,7 @@ jobs:
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
 
   release:
-    name: Release APK to Firebase
+    name: Create GitHub Release and Upload APK
     needs: [build]
     runs-on: ubuntu-latest
 
@@ -66,14 +66,27 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download APK artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
           name: release-apk
 
-      - name: Upload APK to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: android-testers
-          file: app-release.apk
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload APK to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-apk/app-release.apk
+          asset_name: app-release.apk
+          asset_content_type: application/vnd.android.package-archive

@@ -89,8 +89,8 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Position> _listenToLocationChanges() {
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
       ),
     ).listen((Position position) {
       developer
@@ -128,18 +128,22 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_isCollectingData) return;
     if (_throttleTimer?.isActive ?? false) return;
 
-    _throttleTimer = Timer(const Duration(milliseconds: 100), () {
+    _throttleTimer = Timer(const Duration(milliseconds: 50), () {
       _saveHistoricData();
     });
   }
 
-  void _saveHistoricData() {
-    if (_currentPosition != null &&
-        _userAccelerometerEvent != null &&
-        _gyroscopeEvent != null) {
+  Future<void> _saveHistoricData() async {
+    if (_userAccelerometerEvent != null && _gyroscopeEvent != null) {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+      setState(() {
+        _currentPosition = position;
+      });
       final data = HistoricData(
         timestamp: DateTime.now(),
-        position: _currentPosition!,
+        position: position,
         userAccelerometerEvent: _userAccelerometerEvent!,
         gyroscopeEvent: _gyroscopeEvent!,
       );

@@ -58,7 +58,7 @@ jobs:
 
   release:
     permissions:
-      contents: read
+      contents: write
 
     name: Create GitHub Release and Upload APK
     needs: [build]
@@ -85,11 +85,11 @@ jobs:
           prerelease: false
 
       - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-apk/app-release.apk
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: release-apk/app-release.apk
           asset_name: app-release.apk
-          asset_content_type: application/vnd.android.package-archive
+          tag: v${{ github.run_number }}
+          overwrite: true
+          body: "Release v${{ github.run_number }} with APK asset."

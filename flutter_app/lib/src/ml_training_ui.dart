@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class MLTrainingWidget extends StatefulWidget {
@@ -24,11 +23,12 @@ class _MLTrainingWidgetState extends State<MLTrainingWidget> {
             setState(() {
               _selectedSurfaceType = newValue ?? 'none';
             });
-            widget.onSurfaceTypeChanged(_selectedSurfaceType);
+            widget.onSurfaceTypeChanged(_selectedSurfaceType); // Pass to parent
             if (_selectedSurfaceType != 'none') {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Please only cycle on $_selectedSurfaceType surfaces.'),
+                  content: Text(
+                      'Please only cycle on $_selectedSurfaceType surfaces.'),
                 ),
               );
             }
@@ -45,7 +45,6 @@ class _MLTrainingWidgetState extends State<MLTrainingWidget> {
             );
           }).toList(),
         ),
-        // ...collect data buttons...
       ],
     );
   }

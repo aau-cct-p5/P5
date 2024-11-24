@@ -11,11 +11,11 @@ class MapWidget extends StatelessWidget {
   final double currentZoom;
 
   const MapWidget({
-    Key? key,
+    super.key,
     required this.mapController,
     required this.currentPosition,
     required this.currentZoom,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

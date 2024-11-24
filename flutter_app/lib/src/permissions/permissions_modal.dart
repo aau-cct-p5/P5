@@ -6,7 +6,7 @@ import 'package:logger/logger.dart';
 import '../home_page.dart';
 
 class PermissionsModal extends StatefulWidget {
-  const PermissionsModal({Key? key}) : super(key: key);
+  const PermissionsModal({super.key});
 
   @override
   _PermissionsModalState createState() => _PermissionsModalState();

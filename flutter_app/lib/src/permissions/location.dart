@@ -3,16 +3,16 @@ import 'package:logger/logger.dart';
 
 Future<void> requestLocationPermissions() async {
   final permissionsService = PermissionsService();
-  final Logger _logger = Logger();
+  final Logger logger = Logger();
 
   bool permissionGranted = await permissionsService.requestLocationPermission();
   if (!permissionGranted) {
-    _logger.i('Location permission not granted');
+    logger.i('Location permission not granted');
     return;
   }
 
   bool backgroundModeEnabled = await permissionsService.enableBackgroundMode();
   if (!backgroundModeEnabled) {
-    _logger.i('Failed to enable background mode');
+    logger.i('Failed to enable background mode');
   }
 }

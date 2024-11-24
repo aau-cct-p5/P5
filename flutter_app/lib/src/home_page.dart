@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/data_collection/collect_data.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
@@ -10,18 +9,18 @@ import 'HistoricData.dart';
 import 'data_export/export_data.dart';
 import 'dart:developer' as developer;
 import 'map.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
     as fr;
 import 'permissions/activity.dart'; // Import the new activity permission file
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'ml_training_ui.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
+  @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
@@ -41,6 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _activitySubscription; // Add activity subscription
   fr.ActivityType _currentActivity =
       fr.ActivityType.UNKNOWN; // Add state variable for current activity
+  String _currentSurfaceType = 'none';
+  bool _showMLWidget = false;
 
   // List to store historic data temporarily
   final List<HistoricData> _tempHistoricData = [];
@@ -281,7 +282,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _currentActivity = fr.ActivityType
               .ON_BICYCLE; // Update current activity for other activities
         });
-        developer.log('Activity detected: ${_currentActivity}');
+        developer.log('Activity detected: $_currentActivity');
       }
     }
   }
@@ -334,6 +335,14 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
             icon: Icon(_isMapVisible ? Icons.map_outlined : Icons.map),
             onPressed: _toggleMapVisibility,
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _showMLWidget = !_showMLWidget;
+              });
+            },
+            child: const Text('ML'),
           ),
         ],
       ),
@@ -443,6 +452,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: _isCycling ? Colors.green : Colors.grey,
                     size: 48.0,
                   ),
+                  if (_showMLWidget)
+                    MLTrainingWidget(
+                      onSurfaceTypeChanged: (String newSurfaceType) {
+                        setState(() {
+                          _currentSurfaceType = newSurfaceType;
+                        });
+                      },
+                    ),
                 ],
               );
             }

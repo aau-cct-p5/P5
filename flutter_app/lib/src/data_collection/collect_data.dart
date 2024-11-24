@@ -24,6 +24,7 @@ Map<String, dynamic> prepareData(HistoricData data) {
       'z': data.gyroscopeEvent.z,
     },
     'rmsAcceleration': data.rmsAcceleration,
+    'surfaceType': data.surfaceType,
   };
 }
 

@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
 import '../HistoricData.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/services.dart' show rootBundle;
@@ -25,6 +23,7 @@ Map<String, dynamic> prepareData(HistoricData data) {
       'z': data.gyroscopeEvent.z,
     },
     'rmsAcceleration': data.rmsAcceleration,
+    'surfaceType': data.surfaceType,
   };
 }
 

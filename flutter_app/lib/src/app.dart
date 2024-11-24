@@ -17,16 +17,16 @@ Future<void> initializeApp() async {
 }
 
 Future<void> _createFileIfNotExists() async {
-  final Logger _logger = Logger();
+  final Logger logger = Logger();
   try {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/measurements.txt');
     if (!await file.exists()) {
       await file.create();
-      _logger.i('File created: ${file.path}');
+      logger.i('File created: ${file.path}');
     }
   } catch (e) {
-    _logger.e('Error creating file: $e');
+    logger.e('Error creating file: $e');
   }
 }
 

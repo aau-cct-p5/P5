@@ -10,12 +10,14 @@ class HistoricData {
   final UserAccelerometerEvent userAccelerometerEvent; // UserAccelerometerEvent filters out gravity
   final GyroscopeEvent gyroscopeEvent;
   final double rmsAcceleration;
+  final String surfaceType;
 
   HistoricData({
     required this.timestamp,
     required this.position,
     required this.userAccelerometerEvent,
     required this.gyroscopeEvent,
+    this.surfaceType = 'none',
   }) : rmsAcceleration = sqrt(
           userAccelerometerEvent.x * userAccelerometerEvent.x +
               userAccelerometerEvent.y * userAccelerometerEvent.y +

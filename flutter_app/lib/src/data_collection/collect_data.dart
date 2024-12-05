@@ -29,17 +29,31 @@ Map<String, dynamic> prepareData(HistoricData data) {
 }
 
 Future<File> getLocalFile() async {
+  developer.log('Getting local file...');
   final directory = await getApplicationDocumentsDirectory();
+  developer.log('File path: ${(await getApplicationDocumentsDirectory()).path}');
   return File('${directory.path}/measurements.txt');
 }
 
-Future<void> writeDataToFile(HistoricData data) async {
-  final file = await getLocalFile();
-  final body = jsonEncode(prepareData(data));
-  await file.writeAsString('$body\n', mode: FileMode.append);
+Future<void> writeDataToFile(List<HistoricData> dataList, String filePath) async {
+  developer.log('Writing data to file...');
+  final file = File(filePath);
+  developer.log('File path: $file');
   
-  _writeCount++;
+  final StringBuffer buffer = StringBuffer();
+
+  for (var data in dataList) {
+    developer.log('Preparing data for saving...');
+    final body = jsonEncode(prepareData(data));
+    buffer.writeln(body);
+    developer.log('Data prepared for saving: $body');
+  }
+
+  await file.writeAsString(buffer.toString(), mode: FileMode.append);
+  developer.log('Batch data saved successfully.');
+
+  _writeCount += dataList.length;
   if (_writeCount % 50 == 0) {
-    developer.log('Saved $_writeCount data: $body');
+    developer.log('Saved $_writeCount data entries.');
   }
 }

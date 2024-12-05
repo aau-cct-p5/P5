@@ -9,6 +9,7 @@
 
 import 'package:flutter_app/src/data_collection/collect_data.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import 'dart:async';
@@ -80,11 +81,13 @@ class DataCollectionManager {
   /// Begins listening to the GPS position, accelerometer, and gyroscope streams.
   /// Also starts a timer to periodically write collected data to a file.
   Future<void> startDataCollection() async {
+    developer.log('Starting data collection...');
     _isCollectingData = true;
     _positionSubscription = _listenToLocationChanges();
     _accelerometerSubscription = _listenToAccelerometer();
     _gyroscopeSubscription = _listenToGyroscope();
-    _writeTimer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+    _writeTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      developer.log('Times up, appending data to file.');
       _appendHistoricDataToFile();
     });
   }
@@ -111,7 +114,8 @@ class DataCollectionManager {
         distanceFilter: 0,
       ),
     ).listen((Position position) {
-      developer.log('New position: ${position.latitude}, ${position.longitude}');
+      developer
+          .log('New position: ${position.latitude}, ${position.longitude}');
       _currentPosition = position;
       onDataUpdated();
       _throttleSaveHistoricData();
@@ -188,14 +192,15 @@ class DataCollectionManager {
 
     try {
       final List<HistoricData> dataToAppend = List.from(_tempHistoricData);
+      final String filePath = (await getLocalFile()).path; // Obtain file path
 
       // Create a ReceivePort to receive messages from the isolate
       final ReceivePort receivePort = ReceivePort();
 
-      // Spawn an isolate to handle file writing
+      // Spawn an isolate to handle file writing, passing filePath
       await Isolate.spawn<List<dynamic>>(
         _writeDataIsolate,
-        [dataToAppend, receivePort.sendPort],
+        [dataToAppend, filePath, receivePort.sendPort],
       );
 
       // Wait for the isolate to signal completion
@@ -212,15 +217,16 @@ class DataCollectionManager {
 
   /// Isolate entry point for writing data to a file.
   ///
-  /// Receives a list containing the data to write and a [SendPort] to communicate back.
+  /// Receives a list containing the data to write, the file path, and a [SendPort] to communicate back.
   static Future<void> _writeDataIsolate(List<dynamic> args) async {
     final List<HistoricData> dataToAppend = args[0];
-    final SendPort sendPort = args[1];
-
+    final String filePath = args[1]; // Receive file path
+    final SendPort sendPort = args[2];
+    developer.log('Writing data to file in isolate...');
+    developer.log('Number of data entries to write: ${dataToAppend.length}');
     try {
-      for (var data in dataToAppend) {
-        await writeDataToFile(data); // Write data to file
-      }
+      await writeDataToFile(dataToAppend, filePath); // Pass file path
+      developer.log('All data written to file successfully');
     } catch (e) {
       developer.log('Error in isolate while writing data: $e');
     }
@@ -244,15 +250,16 @@ class DataCollectionManager {
   ///
   /// Offloads the file reading operation to a separate isolate to avoid blocking.
   Future<void> updateWrittenSamples() async {
+    return;
     try {
       // Create a ReceivePort to receive messages from the isolate
       final ReceivePort receivePort = ReceivePort();
 
       // Spawn an isolate to handle file reading
-      await Isolate.spawn<SendPort>(
-        _readSamplesIsolate,
-        receivePort.sendPort,
-      );
+      //await Isolate.spawn<SendPort>(
+      //_readSamplesIsolate,
+      // receivePort.sendPort,
+      //);
 
       // Wait for the isolate to send the number of lines
       final int lineCount = await receivePort.first;

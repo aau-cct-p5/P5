@@ -286,6 +286,10 @@ class DataCollectionManager {
   /// Gets whether data collection is currently active.
   bool get isCollectingData => _isCollectingData;
 
+  set isCollectingData(bool value) {
+    _isCollectingData = value;
+  }
+
   /// Gets the total number of written samples.
   int get writtenSamples => _writtenSamples;
 

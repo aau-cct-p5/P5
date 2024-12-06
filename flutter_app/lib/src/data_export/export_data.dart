@@ -68,11 +68,11 @@ Future<int> sendDataToServerFromExportData() async {
   if (response.statusCode == 200) {
     developer.log('Bulk data sent successfully.');
     try {
-      await file.delete();
+      await file.writeAsString('');
       developer.log(
-          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+          'All data sent successfully. measurements.txt cleared. Total data points sent: $successCount');
     } catch (e) {
-      developer.log('Error deleting file: $e');
+      developer.log('Error clearing file: $e');
     }
   } else {
     developer

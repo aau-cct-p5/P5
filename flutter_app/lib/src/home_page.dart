@@ -13,6 +13,7 @@ import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
 import 'ml_training_ui.dart';
 import 'data_collection/DataCollectionManager.dart';
 import 'ActivityRecognitionManager.dart';
+import 'app.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -26,7 +27,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Position? _currentPosition;
   final MapController _mapController = MapController();
-  final double _currentZoom = 20.0;
+  final double _currentZoom = 15.0;
   late Future<void> _initialPositionFuture;
   bool _isDebugVisible = false; // Add state variable for debug visibility
   bool _isMapVisible = true; // Add state variable for map visibility
@@ -38,6 +39,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Activity recognition manager
   late ActivityRecognitionManager _activityRecognitionManager;
+
+  // Add global variable
+  bool isManualDataCollection = false;
 
   @override
   void initState() {
@@ -143,6 +147,47 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       _dataCollectionManager.stopDataCollection();
     }
+  }
+
+  void _toggleManualDataCollection() {
+    setState(() {
+      if (isManualDataCollection) {
+        // Stop manual data collection
+        isManualDataCollection = false;
+        isCollectingData = false; // Update the global collecting data flag
+        _dataCollectionManager.stopDataCollection();
+      } else {
+        // Start manual data collection and stop auto if active
+        isManualDataCollection = true;
+        isCollectingData = true; // Update the global collecting data flag
+        _dataCollectionManager.startDataCollection();
+        if (isAutoDataCollection) {
+          isAutoDataCollection = false;
+          _activityRecognitionManager.unsubscribeActivityStream();
+          _dataCollectionManager.stopAutoDataCollection();
+        }
+      }
+    });
+  }
+
+  void _toggleAutoDataCollection() {
+    setState(() {
+      if (isAutoDataCollection) {
+        // Stop auto data collection
+        isAutoDataCollection = false;
+        // Do not directly update isCollectingData here
+        _activityRecognitionManager.unsubscribeActivityStream();
+        _dataCollectionManager.stopAutoDataCollection();
+      } else {
+        // Start auto data collection and stop manual if active
+        isAutoDataCollection = true;
+        _activityRecognitionManager.subscribeActivityStream();
+        if (isManualDataCollection) {
+          isManualDataCollection = false;
+          _dataCollectionManager.stopDataCollection();
+        }
+      }
+    });
   }
 
   Future<void> sendDataToServer() async {
@@ -279,16 +324,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: const Text('Send Data to Server'),
                     ),
                   ],
-                  // Add Bicycle Icon indicating cycling status
-                  Icon(
-                    _activityRecognitionManager.isCycling
-                        ? Icons.directions_bike
-                        : Icons.directions_bike_outlined,
-                    color: _activityRecognitionManager.isCycling
-                        ? Colors.green
-                        : Colors.grey,
-                    size: 48.0,
-                  ),
                   if (_showMLWidget)
                     MLTrainingWidget(
                       onSurfaceTypeChanged: (String newSurfaceType) {
@@ -297,6 +332,23 @@ class _MyHomePageState extends State<MyHomePage> {
                         });
                       },
                     ),
+                  ElevatedButton(
+                    onPressed: _toggleManualDataCollection,
+                    child: Text(isManualDataCollection
+                        ? 'Stop Manual Data Collection'
+                        : 'Start Manual Data Collection'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _toggleAutoDataCollection,
+                    child: Text(isAutoDataCollection
+                        ? 'Stop Auto Data Collection'
+                        : 'Start Auto Data Collection'),
+                  ),
+                  Icon(
+                    Icons.directions_bike,
+                    color: isCollectingData ? Colors.green : Colors.grey, // Modified line
+                    size: 48.0,
+                  ),
                 ],
               );
             }

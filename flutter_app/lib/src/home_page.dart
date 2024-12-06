@@ -40,8 +40,6 @@ class _MyHomePageState extends State<MyHomePage> {
   // Activity recognition manager
   late ActivityRecognitionManager _activityRecognitionManager;
 
-
-
   bool isManualDataCollection = false;
   List<String> logs = [];
 
@@ -99,7 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _dataCollectionManager
         .updateWrittenSamples(); // Initialize written samples count
-    _activityRecognitionManager.subscribeActivityStream(); // Subscribe to activity stream
+    _activityRecognitionManager
+        .subscribeActivityStream(); // Subscribe to activity stream
   }
 
   @override
@@ -147,7 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_dataCollectionManager.isCollectingData) {
       _dataCollectionManager.startDataCollection();
     } else {
-
       _dataCollectionManager.stopDataCollection();
     }
   }
@@ -193,10 +191,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-
   Future<List<String>> sendDataToServer() async {
     // Modify sendDataToServer to update written samples
-    logs = await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
+    logs =
+        await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _dataCollectionManager
         .updateWrittenSamples(); // Update the written samples count after sending
     return logs;
@@ -228,7 +226,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-
       body: Column(
         children: [
           Expanded(
@@ -275,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     X:'),
+                                            child: const Text('X:'),
                                           ),
                                           Text('${event.x}'),
                                         ],
@@ -284,7 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     Y:'),
+                                            child: const Text('Y:'),
                                           ),
                                           Text('${event.y}'),
                                         ],
@@ -293,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     Z:'),
+                                            child: const Text('Z:'),
                                           ),
                                           Text('${event.z}'),
                                         ],
@@ -322,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     X:'),
+                                            child: const Text('X:'),
                                           ),
                                           Text('${event.x}'),
                                         ],
@@ -331,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     Y:'),
+                                            child: const Text('Y:'),
                                           ),
                                           Text('${event.y}'),
                                         ],
@@ -340,7 +337,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         children: [
                                           SizedBox(
                                             width: 150,
-                                            child: const Text('                                     Z:'),
+                                            child: const Text('Z:'),
                                           ),
                                           Text('${event.z}'),
                                         ],
@@ -358,9 +355,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount:
-                                  _dataCollectionManager.tempHistoricData
-                                      .length,
+                              itemCount: _dataCollectionManager
+                                  .tempHistoricData.length,
                               itemBuilder: (context, index) {
                                 final data = _dataCollectionManager
                                     .tempHistoricData[index];
@@ -391,6 +387,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                         : 'Start Data Collection'),
                               ),
                             ElevatedButton(
+                              onPressed: () async {
+                                logs = await sendDataToServer();
+                                String log = logs.last;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Hello? $log')),
+                                );
+                              },
+                              child: const Text('Send Data to Server'),
+                            ),
+                            ElevatedButton(
                               onPressed: _toggleManualDataCollection,
                               child: Text(isManualDataCollection
                                   ? 'Stop Manual Data Collection'
@@ -404,9 +410,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             Icon(
                               Icons.directions_bike,
-                              color: isCollectingData
-                                  ? Colors.green
-                                  : Colors.grey,
+                              color:
+                                  isCollectingData ? Colors.green : Colors.grey,
                               size: 48.0,
                             ),
                           ],
@@ -432,18 +437,43 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    logs = await sendDataToServer();
-                    String log = logs.last;
+                    // Show Snackbar when starting to send data
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                         content: Text('Hello? ${log}')),
-                      ); // Add SnackBar for cycling stop
-                      },
-                      child: const Text('Send Data to Server'),
-                    ),
-                  ],
-                    
-                // Add other buttons here
+                        content: Text('Sending data to server...'),
+                        behavior:
+                            SnackBarBehavior.floating, // Make snackbar floating
+                        elevation: 6.0, // Elevate snackbar
+                      ),
+                    );
+
+                    try {
+                      logs = await sendDataToServer();
+                      String log = logs.last;
+
+                      // Show Snackbar when data has been sent successfully
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Data sent: $log'),
+                          behavior: SnackBarBehavior
+                              .floating, // Make snackbar floating
+                          elevation: 6.0, // Elevate snackbar
+                        ),
+                      );
+                    } catch (e) {
+                      // Show Snackbar if there was an error sending data
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to send data: $e'),
+                          behavior: SnackBarBehavior
+                              .floating, // Make snackbar floating
+                          elevation: 6.0, // Elevate snackbar
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Send Data to Server'),
+                ),
                 ElevatedButton(
                   onPressed: _toggleDataCollection,
                   child: Text(
@@ -468,7 +498,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         : 'Start Auto Data Collection',
                   ),
                 ),
-                // Add biking icon here
                 Icon(
                   Icons.directions_bike,
                   color: isCollectingData ? Colors.green : Colors.grey,

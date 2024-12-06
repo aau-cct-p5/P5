@@ -39,6 +39,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // Activity recognition manager
   late ActivityRecognitionManager _activityRecognitionManager;
 
+  List<String> logs = [];
+
   @override
   void initState() {
     super.initState();
@@ -141,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_dataCollectionManager.isCollectingData) {
       _dataCollectionManager.startDataCollection();
     } else {
+
       _dataCollectionManager.stopDataCollection();
     }
   }
@@ -150,6 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _dataCollectionManager
         .updateWrittenSamples(); // Update the written samples count after sending
+    
   }
 
   @override
@@ -274,7 +278,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ElevatedButton(
                       onPressed: () async {
-                        await sendDataToServer();
+                        logs = await sendDataToServer();
+                        String log = logs.last;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Hello? ${log}')),
+                        ); // Add SnackBar for cycling stop
                       },
                       child: const Text('Send Data to Server'),
                     ),

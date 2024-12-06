@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../HistoricData.dart';
 import 'dart:developer' as developer;
@@ -34,17 +35,22 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
-Future<int> sendDataToServerFromExportData() async {
+Future<List<String>> sendDataToServerFromExportData() async {
+  List<String> logs = [];
+
   developer.log('Starting to send data to server.');
+  logs.add('Starting to send data to server');
 
   final file = await getLocalFile();
   if (!await file.exists()) {
     developer.log('No data to send.');
-    return 0;
+    logs.add('No data to send');
+    return logs;
   }
 
   final lines = await file.readAsLines();
   developer.log('Number of data entries to send: ${lines.length}');
+  logs.add('Number of data entries to send: ${lines.length}');
 
   final headers = {
     'Content-Type': 'application/json',
@@ -64,23 +70,28 @@ Future<int> sendDataToServerFromExportData() async {
     headers: headers,
     body: bulkBody,
   );
-
   if (response.statusCode == 200) {
     developer.log('Bulk data sent successfully.');
+    logs.add('Bulk data sent successfully.');
     try {
       await file.writeAsString('');
       developer.log(
-          'All data sent successfully. measurements.txt cleared. Total data points sent: $successCount');
+          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+      logs.add('All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
     } catch (e) {
-      developer.log('Error clearing file: $e');
+      developer.log('Error deleting file: $e');
+      logs.add('Error deleting file: $e');
+
     }
   } else {
     developer
         .log('Failed to send bulk data. Status code: ${response.statusCode}.');
+    logs.add('Failed to send bulk data. Status code: ${response.statusCode}.');
     await file.writeAsString(remainingLines.join('\n'));
     developer.log(
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
+    logs.add('${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
   }
 
-  return successCount; // Return the number of successfully sent samples
+  return logs;
 }

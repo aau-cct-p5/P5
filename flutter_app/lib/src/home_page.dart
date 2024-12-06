@@ -148,12 +148,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> sendDataToServer() async {
+  Future<List<String>> sendDataToServer() async {
     // Modify sendDataToServer to update written samples
-    await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
+    logs = await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _dataCollectionManager
         .updateWrittenSamples(); // Update the written samples count after sending
-    
+    return logs;
   }
 
   @override

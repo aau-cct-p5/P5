@@ -40,8 +40,10 @@ class _MyHomePageState extends State<MyHomePage> {
   // Activity recognition manager
   late ActivityRecognitionManager _activityRecognitionManager;
 
-  // Add global variable
+
+
   bool isManualDataCollection = false;
+  List<String> logs = [];
 
   @override
   void initState() {
@@ -145,6 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_dataCollectionManager.isCollectingData) {
       _dataCollectionManager.startDataCollection();
     } else {
+
       _dataCollectionManager.stopDataCollection();
     }
   }
@@ -190,11 +193,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> sendDataToServer() async {
+
+  Future<List<String>> sendDataToServer() async {
     // Modify sendDataToServer to update written samples
-    await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
+    logs = await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _dataCollectionManager
         .updateWrittenSamples(); // Update the written samples count after sending
+    return logs;
   }
 
   @override
@@ -223,6 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -426,10 +432,17 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    await sendDataToServer();
-                  },
-                  child: const Text('Send Data to Server'),
-                ),
+                    logs = await sendDataToServer();
+                    String log = logs.last;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                         content: Text('Hello? ${log}')),
+                      ); // Add SnackBar for cycling stop
+                      },
+                      child: const Text('Send Data to Server'),
+                    ),
+                  ],
+                    
                 // Add other buttons here
                 ElevatedButton(
                   onPressed: _toggleDataCollection,

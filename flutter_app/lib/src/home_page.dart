@@ -53,6 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
+  List<String> logs = [];
+
   @override
   void initState() {
     super.initState();
@@ -222,10 +224,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> sendDataToServer() async {
+  Future<List<String>> sendDataToServer() async {
     // Modify sendDataToServer to update written samples
-    await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
+    logs = await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
     await _updateWrittenSamples(); // Update the written samples count after sending
+    return logs;
   }
 
   Future<void> _appendWrittenSamplesCount() async {
@@ -280,7 +283,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Cycling stopped. Data collection halted.')),
-        ); // Add SnackBar for cycling stop
+        );
         _checkIfConnected();
       } else {
         setState(() {
@@ -296,7 +299,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi) {
       developer.log('Connected, sending data...');
-      sendDataToServer();
+      logs = await sendDataToServer();
     } else {
       developer.log('Not connected to wifi, trying again later...');
     }
@@ -444,7 +447,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ElevatedButton(
                       onPressed: () async {
-                        await sendDataToServer();
+                        logs = await sendDataToServer();
+                        String log = logs.last;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Hello? ${log}')),
+                        ); // Add SnackBar for cycling stop
                       },
                       child: const Text('Send Data to Server'),
                     ),

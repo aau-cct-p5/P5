@@ -223,137 +223,248 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Center(
-        child: FutureBuilder<void>(
-          future: _initialPositionFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  if (_isMapVisible) ...[
-                    if (_currentPosition != null)
-                      MapWidget(
-                        mapController: _mapController,
-                        currentPosition: _currentPosition!,
-                        currentZoom: _currentZoom,
-                      ),
-                  ],
-                  if (_isDebugVisible) ...[
-                    const Text('GPS Data:'),
-                    if (_currentPosition != null)
-                      Text(
-                          'Lat: ${_currentPosition!.latitude}, Lon: ${_currentPosition!.longitude}'),
-                    const SizedBox(height: 20),
-                    const Text('Accelerometer Data:'),
-                    StreamBuilder<UserAccelerometerEvent>(
-                      stream: userAccelerometerEvents,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final event = snapshot.data!;
-                          return Text(
-                              'X: ${event.x}, Y: ${event.y}, Z: ${event.z}');
-                        } else {
-                          return const Text(
-                              'Waiting for accelerometer data...');
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Gyroscope Data:'),
-                    StreamBuilder<GyroscopeEvent>(
-                      stream: gyroscopeEvents,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final event = snapshot.data!;
-                          return Text(
-                              'X: ${event.x}, Y: ${event.y}, Z: ${event.z}');
-                        } else {
-                          return const Text('Waiting for gyroscope data...');
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Historic Data:'),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount:
-                              _dataCollectionManager.tempHistoricData.length,
-                          itemBuilder: (context, index) {
-                            final data =
-                                _dataCollectionManager.tempHistoricData[index];
-                            return ListTile(
-                              title: Text(
-                                  'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
-                              subtitle: Text(
-                                  'Acc: X=${data.userAccelerometerEvent.x}, Y=${data.userAccelerometerEvent.y}, Z=${data.userAccelerometerEvent.z}\n'
-                                  'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Text(
-                        'Samples in Memory: ${_dataCollectionManager.tempHistoricData.length}'), // Existing samples count
-                    Text(
-                        'Written Samples: ${_dataCollectionManager.writtenSamples}'), // Add written samples statistic
-                    const SizedBox(height: 20),
-                    const Text('Current Activity:'),
-                    Text(_activityRecognitionManager.currentActivity
-                        .toString()),
-                    const SizedBox(height: 20),
-                    // Hide the toggle button if cycling is detected
-                    if (!_activityRecognitionManager.isCycling)
-                      ElevatedButton(
-                        onPressed: _toggleDataCollection,
-                        child: Text(_dataCollectionManager.isCollectingData
-                            ? 'Stop Data Collection'
-                            : 'Start Data Collection'),
-                      ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await sendDataToServer();
-                      },
-                      child: const Text('Send Data to Server'),
-                    ),
-                  ],
-                  if (_showMLWidget)
-                    MLTrainingWidget(
-                      onSurfaceTypeChanged: (String newSurfaceType) {
-                        setState(() {
-                          _currentSurfaceType = newSurfaceType;
-                        });
-                      },
-                    ),
-                  ElevatedButton(
-                    onPressed: _toggleManualDataCollection,
-                    child: Text(isManualDataCollection
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Center(
+                child: FutureBuilder<void>(
+                  future: _initialPositionFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          if (_isMapVisible) ...[
+                            if (_currentPosition != null)
+                              MapWidget(
+                                mapController: _mapController,
+                                currentPosition: _currentPosition!,
+                                currentZoom: _currentZoom,
+                              ),
+                          ],
+                          if (_isDebugVisible) ...[
+                            const Text('GPS Data:'),
+                            if (_currentPosition != null) ...[
+                              Text('Lat: ${_currentPosition!.latitude}'),
+                              Text('Lon: ${_currentPosition!.longitude}'),
+                            ],
+                            const SizedBox(height: 20),
+                            // Accelerometer Data
+                            const Text('Accelerometer Data:'),
+                            StreamBuilder<UserAccelerometerEvent>(
+                              stream: userAccelerometerEvents,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  final event = snapshot.data!;
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     X:'),
+                                          ),
+                                          Text('${event.x}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     Y:'),
+                                          ),
+                                          Text('${event.y}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     Z:'),
+                                          ),
+                                          Text('${event.z}'),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return const Text(
+                                      'Waiting for accelerometer data...');
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            // Gyroscope Data
+                            const Text('Gyroscope Data:'),
+                            StreamBuilder<GyroscopeEvent>(
+                              stream: gyroscopeEvents,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  final event = snapshot.data!;
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     X:'),
+                                          ),
+                                          Text('${event.x}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     Y:'),
+                                          ),
+                                          Text('${event.y}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            child: const Text('                                     Z:'),
+                                          ),
+                                          Text('${event.z}'),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return const Text(
+                                      'Waiting for gyroscope data...');
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            const Text('Historic Data:'),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount:
+                                  _dataCollectionManager.tempHistoricData
+                                      .length,
+                              itemBuilder: (context, index) {
+                                final data = _dataCollectionManager
+                                    .tempHistoricData[index];
+                                return ListTile(
+                                  title: Text(
+                                      'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
+                                  subtitle: Text(
+                                      'Acc: X=${data.userAccelerometerEvent.x}, Y=${data.userAccelerometerEvent.y}, Z=${data.userAccelerometerEvent.z}\n'
+                                      'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
+                                );
+                              },
+                            ),
+                            Text(
+                                'Samples in Memory: ${_dataCollectionManager.tempHistoricData.length}'),
+                            Text(
+                                'Written Samples: ${_dataCollectionManager.writtenSamples}'),
+                            const SizedBox(height: 20),
+                            const Text('Current Activity:'),
+                            Text(_activityRecognitionManager.currentActivity
+                                .toString()),
+                            const SizedBox(height: 20),
+                            if (!_activityRecognitionManager.isCycling)
+                              ElevatedButton(
+                                onPressed: _toggleDataCollection,
+                                child: Text(
+                                    _dataCollectionManager.isCollectingData
+                                        ? 'Stop Data Collection'
+                                        : 'Start Data Collection'),
+                              ),
+                            ElevatedButton(
+                              onPressed: _toggleManualDataCollection,
+                              child: Text(isManualDataCollection
+                                  ? 'Stop Manual Data Collection'
+                                  : 'Start Manual Data Collection'),
+                            ),
+                            ElevatedButton(
+                              onPressed: _toggleAutoDataCollection,
+                              child: Text(isAutoDataCollection
+                                  ? 'Stop Auto Data Collection'
+                                  : 'Start Auto Data Collection'),
+                            ),
+                            Icon(
+                              Icons.directions_bike,
+                              color: isCollectingData
+                                  ? Colors.green
+                                  : Colors.grey,
+                              size: 48.0,
+                            ),
+                          ],
+                          if (_showMLWidget)
+                            MLTrainingWidget(
+                              onSurfaceTypeChanged: (String newSurfaceType) {
+                                setState(() {
+                                  _currentSurfaceType = newSurfaceType;
+                                });
+                              },
+                            ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    await sendDataToServer();
+                  },
+                  child: const Text('Send Data to Server'),
+                ),
+                // Add other buttons here
+                ElevatedButton(
+                  onPressed: _toggleDataCollection,
+                  child: Text(
+                    _dataCollectionManager.isCollectingData
+                        ? 'Stop Data Collection'
+                        : 'Start Data Collection',
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _toggleManualDataCollection,
+                  child: Text(
+                    isManualDataCollection
                         ? 'Stop Manual Data Collection'
-                        : 'Start Manual Data Collection'),
+                        : 'Start Manual Data Collection',
                   ),
-                  ElevatedButton(
-                    onPressed: _toggleAutoDataCollection,
-                    child: Text(isAutoDataCollection
+                ),
+                ElevatedButton(
+                  onPressed: _toggleAutoDataCollection,
+                  child: Text(
+                    isAutoDataCollection
                         ? 'Stop Auto Data Collection'
-                        : 'Start Auto Data Collection'),
+                        : 'Start Auto Data Collection',
                   ),
-                  Icon(
-                    Icons.directions_bike,
-                    color: isCollectingData ? Colors.green : Colors.grey, // Modified line
-                    size: 48.0,
-                  ),
-                ],
-              );
-            }
-          },
-        ),
+                ),
+                // Add biking icon here
+                Icon(
+                  Icons.directions_bike,
+                  color: isCollectingData ? Colors.green : Colors.grey,
+                  size: 48.0,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

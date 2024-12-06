@@ -16,7 +16,7 @@ import 'dart:async';
 import 'dart:isolate'; // Import for multithreading
 import '../HistoricData.dart';
 import 'dart:developer' as developer;
-
+import '../app.dart';
 class DataCollectionManager {
   /// Indicates whether data collection is currently active.
   bool _isCollectingData = false;
@@ -90,6 +90,17 @@ class DataCollectionManager {
       developer.log('Times up, appending data to file.');
       _appendHistoricDataToFile();
     });
+  }
+
+  void startAutoDataCollection() {
+    isAutoDataCollection = true; // Update the global variable
+    // Do not start data collection here
+  }
+
+  // Add method to stop automatic data collection
+  void stopAutoDataCollection() {
+    isAutoDataCollection = false; // Update the global variable
+    // Do not stop data collection here
   }
 
   /// Stops the data collection process.
@@ -250,7 +261,6 @@ class DataCollectionManager {
   ///
   /// Offloads the file reading operation to a separate isolate to avoid blocking.
   Future<void> updateWrittenSamples() async {
-    return;
     try {
       // Create a ReceivePort to receive messages from the isolate
       final ReceivePort receivePort = ReceivePort();

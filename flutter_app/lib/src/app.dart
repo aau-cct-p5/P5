@@ -8,6 +8,10 @@ import 'permissions/location.dart';
 import 'package:logger/logger.dart';
 import 'permissions/permissions_modal.dart';
 
+bool isManualDataCollection = false;
+bool isAutoDataCollection = false;
+bool isCollectingData = false; // Ensure this line exists and is globally accessible
+
 Future<void> initializeApp() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

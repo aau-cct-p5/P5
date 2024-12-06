@@ -74,13 +74,14 @@ Future<List<String>> sendDataToServerFromExportData() async {
     developer.log('Bulk data sent successfully.');
     logs.add('Bulk data sent successfully.');
     try {
-      await file.delete();
+      await file.writeAsString('');
       developer.log(
           'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
       logs.add('All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
     } catch (e) {
       developer.log('Error deleting file: $e');
       logs.add('Error deleting file: $e');
+
     }
   } else {
     developer

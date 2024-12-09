@@ -14,7 +14,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 
 import 'dart:async';
 import 'dart:isolate'; // Import for multithreading
-import '../HistoricData.dart';
+import '../historic_data.dart';
 import 'dart:developer' as developer;
 import '../app.dart';
 class DataCollectionManager {

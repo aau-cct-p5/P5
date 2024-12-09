@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../HistoricData.dart';
+import '../historic_data.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/services.dart' show rootBundle;
 import '../data_collection/collect_data.dart';

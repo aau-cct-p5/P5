@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
-import '../HistoricData.dart';
+import '../historic_data.dart';
 import 'dart:developer' as developer;
 
 int _writeCount = 0;

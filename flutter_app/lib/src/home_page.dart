@@ -11,8 +11,8 @@ import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
     as fr;
 // Import the new activity permission file
 import 'ml_training_ui.dart';
-import 'data_collection/DataCollectionManager.dart';
-import 'ActivityRecognitionManager.dart';
+import 'data_collection/data_collection_manager.dart';
+import 'activity_recognition_manager.dart';
 import 'app.dart';
 
 class MyHomePage extends StatefulWidget {

@@ -5,5 +5,4 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeApp();
   runApp(const MyApp());
-  
 }

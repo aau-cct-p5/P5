@@ -14,6 +14,7 @@ import 'ml_training_ui.dart';
 import 'data_collection/data_collection_manager.dart';
 import 'activity_recognition_manager.dart';
 import 'app.dart';
+import 'snackbar_helper.dart'; // Import the SnackbarManager
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -41,7 +42,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late ActivityRecognitionManager _activityRecognitionManager;
 
   bool isManualDataCollection = false;
-  List<String> logs = [];
 
   @override
   void initState() {
@@ -124,14 +124,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _toggleDebugVisibility() {
-    // Add method to toggle debug visibility
     setState(() {
       _isDebugVisible = !_isDebugVisible;
     });
   }
 
   void _toggleMapVisibility() {
-    // Add method to toggle map visibility
     setState(() {
       _isMapVisible = !_isMapVisible;
     });
@@ -191,13 +189,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<List<String>> sendDataToServer() async {
-    // Modify sendDataToServer to update written samples
-    logs =
-        await sendDataToServerFromExportData(); // Ensure sendDataToServer is accessible
+  Future<String> sendDataToServer() async {
+    // Removed the logs list and return type is now String
+    String status = await sendDataToServerFromExportData();
     await _dataCollectionManager
         .updateWrittenSamples(); // Update the written samples count after sending
-    return logs;
+    return status;
   }
 
   @override
@@ -388,11 +385,15 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ElevatedButton(
                               onPressed: () async {
-                                logs = await sendDataToServer();
-                                String log = logs.last;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Hello? $log')),
-                                );
+                                SnackbarManager().showSnackBar(context, 'Sending data to server...');
+                                try {
+                                  String status = await sendDataToServer();
+                                  SnackbarManager().showSnackBar(context, 'Data sent successfully.');
+                                  // Alternatively, display the actual status message:
+                                  // SnackbarManager().showSnackBar(context, status);
+                                } catch (e) {
+                                  SnackbarManager().showSnackBar(context, 'Failed to send data: $e');
+                                }
                               },
                               child: const Text('Send Data to Server'),
                             ),
@@ -437,39 +438,14 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    // Show Snackbar when starting to send data
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Sending data to server...'),
-                        behavior:
-                            SnackBarBehavior.floating, // Make snackbar floating
-                        elevation: 6.0, // Elevate snackbar
-                      ),
-                    );
-
+                    SnackbarManager().showSnackBar(context, 'Sending data to server...');
                     try {
-                      logs = await sendDataToServer();
-                      String log = logs.last;
-
-                      // Show Snackbar when data has been sent successfully
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Data sent: $log'),
-                          behavior: SnackBarBehavior
-                              .floating, // Make snackbar floating
-                          elevation: 6.0, // Elevate snackbar
-                        ),
-                      );
+                      String status = await sendDataToServer();
+                      SnackbarManager().showSnackBar(context, 'Data sent successfully.');
+                      // Alternatively, display the actual status message:
+                      // SnackbarManager().showSnackBar(context, status);
                     } catch (e) {
-                      // Show Snackbar if there was an error sending data
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to send data: $e'),
-                          behavior: SnackBarBehavior
-                              .floating, // Make snackbar floating
-                          elevation: 6.0, // Elevate snackbar
-                        ),
-                      );
+                      SnackbarManager().showSnackBar(context, 'Failed to send data: $e');
                     }
                   },
                   child: const Text('Send Data to Server'),

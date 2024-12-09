@@ -1,0 +1,167 @@
+    classDiagram
+    class ActivityRecognitionManager
+    ActivityRecognitionManager : +isCycling bool
+    ActivityRecognitionManager : +currentActivity ActivityType
+    ActivityRecognitionManager o-- ActivityType
+    ActivityRecognitionManager : +activitySubscription StreamSubscription~Activity~?
+    ActivityRecognitionManager o-- StreamSubscription~Activity~
+    ActivityRecognitionManager : +onCyclingStatusChanged dynamic Functionbool
+    ActivityRecognitionManager o-- dynamic Functionbool
+    ActivityRecognitionManager : +onActivityChanged dynamic FunctionActivityType
+    ActivityRecognitionManager o-- dynamic FunctionActivityType
+    ActivityRecognitionManager : +context BuildContext
+    ActivityRecognitionManager o-- BuildContext
+    ActivityRecognitionManager : +startDataCollectionCallback dynamic Function
+    ActivityRecognitionManager o-- dynamic Function
+    ActivityRecognitionManager : +stopDataCollectionCallback dynamic Function
+    ActivityRecognitionManager o-- dynamic Function
+    ActivityRecognitionManager : +sendDataToServerCallback dynamic Function
+    ActivityRecognitionManager o-- dynamic Function
+    ActivityRecognitionManager : +subscribeActivityStream() void
+    ActivityRecognitionManager : +unsubscribeActivityStream() void
+    ActivityRecognitionManager : +onActivityChange() void
+    ActivityRecognitionManager : +checkIfConnected() dynamic
+    ActivityRecognitionManager : +onActivityError() void
+    ActivityRecognitionManager : +dispose() void
+
+    class MyApp
+    MyApp : +build() Widget
+    StatelessWidget <|-- MyApp
+
+    class DataCollectionManager
+    DataCollectionManager : -_isCollectingData bool
+    DataCollectionManager : -_writtenSamples int
+    DataCollectionManager : -_tempHistoricData List~HistoricData~
+    DataCollectionManager : -_throttleTimer Timer?
+    DataCollectionManager o-- Timer
+    DataCollectionManager : -_writeTimer Timer?
+    DataCollectionManager o-- Timer
+    DataCollectionManager : -_currentPosition Position?
+    DataCollectionManager o-- Position
+    DataCollectionManager : -_userAccelerometerEvent UserAccelerometerEvent?
+    DataCollectionManager o-- UserAccelerometerEvent
+    DataCollectionManager : -_gyroscopeEvent GyroscopeEvent?
+    DataCollectionManager o-- GyroscopeEvent
+    DataCollectionManager : -_positionSubscription StreamSubscription~Position~?
+    DataCollectionManager o-- StreamSubscription~Position~
+    DataCollectionManager : -_accelerometerSubscription StreamSubscription~UserAccelerometerEvent~?
+    DataCollectionManager o-- StreamSubscription~UserAccelerometerEvent~
+    DataCollectionManager : -_gyroscopeSubscription StreamSubscription~GyroscopeEvent~?
+    DataCollectionManager o-- StreamSubscription~GyroscopeEvent~
+    DataCollectionManager : +onWrittenSamplesUpdated dynamic Functionint
+    DataCollectionManager o-- dynamic Functionint
+    DataCollectionManager : +onDataUpdated dynamic Function
+    DataCollectionManager o-- dynamic Function
+    DataCollectionManager : +getCurrentSurfaceType dynamic Function
+    DataCollectionManager o-- dynamic Function
+    DataCollectionManager : +isCollectingData bool
+    DataCollectionManager : +writtenSamples int
+    DataCollectionManager : +tempHistoricData List~HistoricData~
+    DataCollectionManager : +currentPosition Position?
+    DataCollectionManager o-- Position
+    DataCollectionManager : +startDataCollection() dynamic
+    DataCollectionManager : +startAutoDataCollection() void
+    DataCollectionManager : +stopAutoDataCollection() void
+    DataCollectionManager : +stopDataCollection() void
+    DataCollectionManager : -_listenToLocationChanges() StreamSubscription<Position>
+    DataCollectionManager : -_listenToAccelerometer() StreamSubscription<UserAccelerometerEvent>
+    DataCollectionManager : -_listenToGyroscope() StreamSubscription<GyroscopeEvent>
+    DataCollectionManager : -_throttleSaveHistoricData() void
+    DataCollectionManager : -_saveHistoricData() dynamic
+    DataCollectionManager : -_appendHistoricDataToFile() dynamic
+    DataCollectionManager : -_writeDataIsolate()$ dynamic
+    DataCollectionManager : +dispose() dynamic
+    DataCollectionManager : +updateWrittenSamples() dynamic
+    DataCollectionManager : -_readSamplesIsolate()$ dynamic
+
+    class HistoricData
+    HistoricData : +timestamp DateTime
+    HistoricData : +position Position
+    HistoricData o-- Position
+    HistoricData : +userAccelerometerEvent UserAccelerometerEvent
+    HistoricData o-- UserAccelerometerEvent
+    HistoricData : +gyroscopeEvent GyroscopeEvent
+    HistoricData o-- GyroscopeEvent
+    HistoricData : +rmsAcceleration double
+    HistoricData : +surfaceType String
+
+    class MyHomePage
+    MyHomePage : +title String
+    MyHomePage : +createState() State<MyHomePage>
+    StatefulWidget <|-- MyHomePage
+
+    class _MyHomePageState
+    _MyHomePageState : -_currentPosition Position?
+    _MyHomePageState o-- Position
+    _MyHomePageState : -_mapController MapController
+    _MyHomePageState o-- MapController
+    _MyHomePageState : -_currentZoom double
+    _MyHomePageState : -_initialPositionFuture dynamic
+    _MyHomePageState : -_isDebugVisible bool
+    _MyHomePageState : -_isMapVisible bool
+    _MyHomePageState : -_currentSurfaceType String
+    _MyHomePageState : -_showMLWidget bool
+    _MyHomePageState : -_dataCollectionManager DataCollectionManager
+    _MyHomePageState o-- DataCollectionManager
+    _MyHomePageState : -_activityRecognitionManager ActivityRecognitionManager
+    _MyHomePageState o-- ActivityRecognitionManager
+    _MyHomePageState : +isManualDataCollection bool
+    _MyHomePageState : +logs List~String~
+    _MyHomePageState : +initState() void
+    _MyHomePageState : +dispose() void
+    _MyHomePageState : -_getInitialPosition() dynamic
+    _MyHomePageState : -_toggleDebugVisibility() void
+    _MyHomePageState : -_toggleMapVisibility() void
+    _MyHomePageState : -_toggleDataCollection() void
+    _MyHomePageState : -_toggleManualDataCollection() void
+    _MyHomePageState : -_toggleAutoDataCollection() void
+    _MyHomePageState : +sendDataToServer() dynamic
+    _MyHomePageState : +build() Widget
+    State <|-- _MyHomePageState
+
+    class MapWidget
+    MapWidget : +mapController MapController
+    MapWidget o-- MapController
+    MapWidget : +currentPosition Position
+    MapWidget o-- Position
+    MapWidget : +currentZoom double
+    MapWidget : +build() Widget
+    StatelessWidget <|-- MapWidget
+
+    class MLTrainingWidget
+    MLTrainingWidget : +onSurfaceTypeChanged dynamic FunctionString
+    MLTrainingWidget o-- dynamic FunctionString
+    MLTrainingWidget : +createState() _MLTrainingWidgetState
+    StatefulWidget <|-- MLTrainingWidget
+
+    class _MLTrainingWidgetState
+    _MLTrainingWidgetState : -_selectedSurfaceType String
+    _MLTrainingWidgetState : +build() Widget
+    State <|-- _MLTrainingWidgetState
+
+    class PermissionsModal
+    PermissionsModal : +createState() _PermissionsModalState
+    StatefulWidget <|-- PermissionsModal
+
+    class _PermissionsModalState
+    _PermissionsModalState : -_permissionsService PermissionsService
+    _PermissionsModalState o-- PermissionsService
+    _PermissionsModalState : -_logger Logger
+    _PermissionsModalState o-- Logger
+    _PermissionsModalState : -_locationPermissionGranted bool
+    _PermissionsModalState : -_activityPermissionGranted bool
+    _PermissionsModalState : +initState() void
+    _PermissionsModalState : -_checkPermissions() dynamic
+    _PermissionsModalState : +build() Widget
+    _PermissionsModalState : -_buildPermissionItem() Widget
+    State <|-- _PermissionsModalState
+
+    class PermissionsService
+    PermissionsService : -_location Location
+    PermissionsService o-- Location
+    PermissionsService : -_logger Logger
+    PermissionsService o-- Logger
+    PermissionsService : +requestLocationPermission() dynamic
+    PermissionsService : +enableBackgroundMode() dynamic
+    PermissionsService : +checkAllPermissions() dynamic
+

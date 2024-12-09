@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:path_provider/path_provider.dart';
-import '../firebase_options.dart';
 import 'dart:io';
-import 'home_page.dart';
 import 'permissions/location.dart';
 import 'package:logger/logger.dart';
 import 'permissions/permissions_modal.dart';
@@ -13,9 +10,6 @@ bool isAutoDataCollection = false;
 bool isCollectingData = false; // Ensure this line exists and is globally accessible
 
 Future<void> initializeApp() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   await _createFileIfNotExists();
   await requestLocationPermissions(); // Add this line to request location permissions
 }

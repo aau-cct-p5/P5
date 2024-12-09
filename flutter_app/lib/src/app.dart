@@ -7,11 +7,11 @@ import 'permissions/permissions_modal.dart';
 
 bool isManualDataCollection = false;
 bool isAutoDataCollection = false;
-bool isCollectingData = false; // Ensure this line exists and is globally accessible
+bool isCollectingData = false;
 
 Future<void> initializeApp() async {
   await _createFileIfNotExists();
-  await requestLocationPermissions(); // Add this line to request location permissions
+  await requestLocationPermissions();
 }
 
 Future<void> _createFileIfNotExists() async {
@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const PermissionsModal(), // Change this line to show the permissions modal first
+      home: const PermissionsModal(),
     );
   }
 }

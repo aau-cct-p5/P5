@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../historic_data.dart';
 import 'dart:developer' as developer;
@@ -35,22 +34,22 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
-Future<List<String>> sendDataToServerFromExportData() async {
-  List<String> logs = [];
+Future<String> sendDataToServerFromExportData() async {
+  String statusMessage = '';
 
   developer.log('Starting to send data to server.');
-  logs.add('Starting to send data to server');
+  statusMessage += 'Starting to send data to server.\n';
 
   final file = await getLocalFile();
   if (!await file.exists()) {
     developer.log('No data to send.');
-    logs.add('No data to send');
-    return logs;
+    statusMessage += 'No data to send.';
+    return statusMessage;
   }
 
   final lines = await file.readAsLines();
   developer.log('Number of data entries to send: ${lines.length}');
-  logs.add('Number of data entries to send: ${lines.length}');
+  statusMessage += 'Number of data entries to send: ${lines.length}.\n';
 
   final headers = {
     'Content-Type': 'application/json',
@@ -72,26 +71,32 @@ Future<List<String>> sendDataToServerFromExportData() async {
   );
   if (response.statusCode == 200) {
     developer.log('Bulk data sent successfully.');
-    logs.add('Bulk data sent successfully.');
+    statusMessage += 'Bulk data sent successfully.\n';
     try {
       await file.writeAsString('');
       developer.log(
           'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
-      logs.add('All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
+      statusMessage +=
+          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount.';
     } catch (e) {
       developer.log('Error deleting file: $e');
-      logs.add('Error deleting file: $e');
-
+      statusMessage += 'Error deleting file: $e.';
     }
   } else {
     developer
         .log('Failed to send bulk data. Status code: ${response.statusCode}.');
-    logs.add('Failed to send bulk data. Status code: ${response.statusCode}.');
+    statusMessage +=
+        'Failed to send bulk data. Status code: ${response.statusCode}.\n';
     await file.writeAsString(remainingLines.join('\n'));
     developer.log(
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
-    logs.add('${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
+    statusMessage +=
+        '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount.';
+    
+    // Throw an exception with the error code
+    throw Exception(
+        'Failed to send data to server. Status code: ${response.statusCode}');
   }
 
-  return logs;
+  return statusMessage;
 }

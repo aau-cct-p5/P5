@@ -73,6 +73,7 @@ Future<String> sendDataToServerFromExportData() async {
   if (response.statusCode == 200) {
     developer.log('Bulk data sent successfully.');
     statusMessage += 'Bulk data sent successfully.\n';
+    successCount = lines.length;
     try {
       await file.writeAsString('');
       developer.log(

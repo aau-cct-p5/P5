@@ -94,13 +94,11 @@ class DataCollectionManager {
 
   void startAutoDataCollection() {
     isAutoDataCollection = true; // Update the global variable
-    // Do not start data collection here
   }
 
   // Add method to stop automatic data collection
   void stopAutoDataCollection() {
     isAutoDataCollection = false; // Update the global variable
-    // Do not stop data collection here
   }
 
   /// Stops the data collection process.

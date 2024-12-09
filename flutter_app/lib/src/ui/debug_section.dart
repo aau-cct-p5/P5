@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/app.dart';
 import 'package:flutter_app/src/snackbar_helper.dart';
@@ -38,6 +37,13 @@ class DebugSection extends StatelessWidget {
           Text('Lon: ${currentPosition!.longitude}'),
         ],
         const SizedBox(height: 20),
+        Text(
+            'Samples in Memory: ${dataCollectionManager.tempHistoricData.length}'),
+        Text('Written Samples: ${dataCollectionManager.writtenSamples}'),
+        const SizedBox(height: 20),
+        const Text('Current Activity:'),
+        Text(activityRecognitionManager.currentActivity.toString()),
+        const SizedBox(height: 20),
         const Text('Accelerometer Data:'),
         SensorDataDisplay<UserAccelerometerEvent>(
           stream: userAccelerometerEvents,
@@ -66,12 +72,6 @@ class DebugSection extends StatelessWidget {
             );
           },
         ),
-        Text('Samples in Memory: ${dataCollectionManager.tempHistoricData.length}'),
-        Text('Written Samples: ${dataCollectionManager.writtenSamples}'),
-        const SizedBox(height: 20),
-        const Text('Current Activity:'),
-        Text(activityRecognitionManager.currentActivity.toString()),
-        const SizedBox(height: 20),
       ],
     );
   }

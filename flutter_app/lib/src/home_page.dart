@@ -7,14 +7,15 @@ import 'dart:async';
 import 'data_export/export_data.dart';
 import 'dart:developer' as developer;
 import 'map.dart';
-import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
-    as fr;
-// Import the new activity permission file
+import 'package:flutter_activity_recognition/flutter_activity_recognition.dart' as fr;
 import 'ml_training_ui.dart';
 import 'data_collection/data_collection_manager.dart';
 import 'activity_recognition_manager.dart';
 import 'app.dart';
 import 'snackbar_helper.dart'; // Import the SnackbarManager and global key
+import 'ui/debug_section.dart';
+import 'ui/sensor_data_display.dart';
+import 'ui/footer_controls.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -30,15 +31,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final MapController _mapController = MapController();
   final double _currentZoom = 15.0;
   late Future<void> _initialPositionFuture;
-  bool _isDebugVisible = false; // Add state variable for debug visibility
-  bool _isMapVisible = true; // Add state variable for map visibility
+  bool _isDebugVisible = false;
+  bool _isMapVisible = true;
   String _currentSurfaceType = 'none';
   bool _showMLWidget = false;
 
-  // Data collection manager
   late DataCollectionManager _dataCollectionManager;
-
-  // Activity recognition manager
   late ActivityRecognitionManager _activityRecognitionManager;
 
   bool isManualDataCollection = false;
@@ -46,19 +44,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _initialPositionFuture =
-        _getInitialPosition(); // Update to directly get initial position
+    _initialPositionFuture = _getInitialPosition();
 
     _dataCollectionManager = DataCollectionManager(
       onWrittenSamplesUpdated: (int newCount) {
         setState(() {
           // Update written samples count in UI
-          // This will be managed within DataCollectionManager
         });
       },
       onDataUpdated: () {
         setState(() {
-          // Update UI when data is updated
           _currentPosition = _dataCollectionManager.currentPosition;
           if (_currentPosition != null &&
               _mapController.mapEventStream.isBroadcast) {
@@ -76,14 +71,12 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       onCyclingStatusChanged: (bool isCycling) {
         setState(() {
-          // Update UI when cycling status changes
-          // Perhaps show/hide buttons, etc.
+          // Update UI on cycling status change
         });
       },
       onActivityChanged: (fr.ActivityType activityType) {
         setState(() {
-          // Update current activity
-          // For UI display
+          // Update current activity for UI
         });
       },
       startDataCollectionCallback: () {
@@ -95,10 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
       sendDataToServerCallback: sendDataToServer,
     );
 
-    _dataCollectionManager
-        .updateWrittenSamples(); // Initialize written samples count
-    _activityRecognitionManager
-        .subscribeActivityStream(); // Subscribe to activity stream
+    _dataCollectionManager.updateWrittenSamples();
+    _activityRecognitionManager.subscribeActivityStream();
   }
 
   @override
@@ -113,8 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      developer
-          .log('Initial position: ${position.latitude}, ${position.longitude}');
+      developer.log('Initial position: ${position.latitude}, ${position.longitude}');
       setState(() {
         _currentPosition = position;
       });
@@ -153,12 +143,12 @@ class _MyHomePageState extends State<MyHomePage> {
       if (isManualDataCollection) {
         // Stop manual data collection
         isManualDataCollection = false;
-        isCollectingData = false; // Update the global collecting data flag
+        isCollectingData = false;
         _dataCollectionManager.stopDataCollection();
       } else {
         // Start manual data collection and stop auto if active
         isManualDataCollection = true;
-        isCollectingData = true; // Update the global collecting data flag
+        isCollectingData = true;
         _dataCollectionManager.startDataCollection();
         if (isAutoDataCollection) {
           isAutoDataCollection = false;
@@ -174,7 +164,6 @@ class _MyHomePageState extends State<MyHomePage> {
       if (isAutoDataCollection) {
         // Stop auto data collection
         isAutoDataCollection = false;
-        // Do not directly update isCollectingData here
         _activityRecognitionManager.unsubscribeActivityStream();
         _dataCollectionManager.stopAutoDataCollection();
       } else {
@@ -190,25 +179,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<String> sendDataToServer() async {
-    // Removed the logs list and return type is now String
     String status = await sendDataToServerFromExportData();
-    await _dataCollectionManager
-        .updateWrittenSamples(); // Update the written samples count after sending
+    await _dataCollectionManager.updateWrittenSamples();
     return status;
   }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
-      key: rootScaffoldMessengerKey, // Assign the global key here
+      key: rootScaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text(widget.title),
           actions: [
             IconButton(
-              icon:
-                  Icon(_isDebugVisible ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(_isDebugVisible ? Icons.visibility_off : Icons.visibility),
               onPressed: _toggleDebugVisibility,
             ),
             IconButton(
@@ -240,181 +226,23 @@ class _MyHomePageState extends State<MyHomePage> {
                       } else {
                         return Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            if (_isMapVisible) ...[
-                              if (_currentPosition != null)
-                                MapWidget(
-                                  mapController: _mapController,
-                                  currentPosition: _currentPosition!,
-                                  currentZoom: _currentZoom,
-                                ),
-                            ],
-                            if (_isDebugVisible) ...[
-                              const Text('GPS Data:'),
-                              if (_currentPosition != null) ...[
-                                Text('Lat: ${_currentPosition!.latitude}'),
-                                Text('Lon: ${_currentPosition!.longitude}'),
-                              ],
-                              const SizedBox(height: 20),
-                              // Accelerometer Data
-                              const Text('Accelerometer Data:'),
-                              StreamBuilder<UserAccelerometerEvent>(
-                                stream: userAccelerometerEvents,
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    final event = snapshot.data!;
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('X:'),
-                                            ),
-                                            Text('${event.x}'),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('Y:'),
-                                            ),
-                                            Text('${event.y}'),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('Z:'),
-                                            ),
-                                            Text('${event.z}'),
-                                          ],
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    return const Text(
-                                        'Waiting for accelerometer data...');
-                                  }
-                                },
+                          children: [
+                            if (_isMapVisible && _currentPosition != null)
+                              MapWidget(
+                                mapController: _mapController,
+                                currentPosition: _currentPosition!,
+                                currentZoom: _currentZoom,
                               ),
-                              const SizedBox(height: 20),
-                              // Gyroscope Data
-                              const Text('Gyroscope Data:'),
-                              StreamBuilder<GyroscopeEvent>(
-                                stream: gyroscopeEvents,
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    final event = snapshot.data!;
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('X:'),
-                                            ),
-                                            Text('${event.x}'),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('Y:'),
-                                            ),
-                                            Text('${event.y}'),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 150,
-                                              child: const Text('Z:'),
-                                            ),
-                                            Text('${event.z}'),
-                                          ],
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    return const Text(
-                                        'Waiting for gyroscope data...');
-                                  }
-                                },
+                            if (_isDebugVisible)
+                              DebugSection(
+                                currentPosition: _currentPosition,
+                                dataCollectionManager: _dataCollectionManager,
+                                activityRecognitionManager: _activityRecognitionManager,
+                                toggleDataCollection: _toggleDataCollection,
+                                toggleManualDataCollection: _toggleManualDataCollection,
+                                toggleAutoDataCollection: _toggleAutoDataCollection,
+                                sendDataToServer: sendDataToServer,
                               ),
-                              const SizedBox(height: 20),
-                              const Text('Historic Data:'),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _dataCollectionManager
-                                    .tempHistoricData.length,
-                                itemBuilder: (context, index) {
-                                  final data = _dataCollectionManager
-                                      .tempHistoricData[index];
-                                  return ListTile(
-                                    title: Text(
-                                        'Time: ${data.timestamp}, Lat: ${data.position.latitude}, Lon: ${data.position.longitude}'),
-                                    subtitle: Text(
-                                        'Acc: X=${data.userAccelerometerEvent.x}, Y=${data.userAccelerometerEvent.y}, Z=${data.userAccelerometerEvent.z}\n'
-                                        'Gyro: X=${data.gyroscopeEvent.x}, Y=${data.gyroscopeEvent.y}, Z=${data.gyroscopeEvent.z}'),
-                                  );
-                                },
-                              ),
-                              Text(
-                                  'Samples in Memory: ${_dataCollectionManager.tempHistoricData.length}'),
-                              Text(
-                                  'Written Samples: ${_dataCollectionManager.writtenSamples}'),
-                              const SizedBox(height: 20),
-                              const Text('Current Activity:'),
-                              Text(_activityRecognitionManager.currentActivity
-                                  .toString()),
-                              const SizedBox(height: 20),
-                              if (!_activityRecognitionManager.isCycling)
-                                ElevatedButton(
-                                  onPressed: _toggleDataCollection,
-                                  child: Text(
-                                      _dataCollectionManager.isCollectingData
-                                          ? 'Stop Data Collection'
-                                          : 'Start Data Collection'),
-                                ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  SnackbarManager().showSnackBar('Sending data to server...');
-                                  try {
-                                    String status = await sendDataToServer();
-                                  } catch (e) {
-                                    SnackbarManager().showSnackBar('Failed to send data: $e');
-                                  }
-                                },
-                                child: const Text('Send Data to Server'),
-                              ),
-                              ElevatedButton(
-                                onPressed: _toggleManualDataCollection,
-                                child: Text(isManualDataCollection
-                                    ? 'Stop Manual Data Collection'
-                                    : 'Start Manual Data Collection'),
-                              ),
-                              ElevatedButton(
-                                onPressed: _toggleAutoDataCollection,
-                                child: Text(isAutoDataCollection
-                                    ? 'Stop Auto Data Collection'
-                                    : 'Start Auto Data Collection'),
-                              ),
-                              Icon(
-                                Icons.directions_bike,
-                                color:
-                                    isCollectingData ? Colors.green : Colors.grey,
-                                size: 48.0,
-                              ),
-                            ],
                             if (_showMLWidget)
                               MLTrainingWidget(
                                 onSurfaceTypeChanged: (String newSurfaceType) {
@@ -431,55 +259,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      SnackbarManager().showSnackBar('Sending data to server...');
-                      try {
-                        String status = await sendDataToServer();
-                        SnackbarManager().showSnackBar('Data sent successfully.');
-                        // Alternatively, display the actual status message:
-                        // SnackbarManager().showSnackBar(status);
-                      } catch (e) {
-                        SnackbarManager().showSnackBar('Failed to send data: $e');
-                      }
-                    },
-                    child: const Text('Send Data to Server'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _toggleDataCollection,
-                    child: Text(
-                      _dataCollectionManager.isCollectingData
-                          ? 'Stop Data Collection'
-                          : 'Start Data Collection',
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _toggleManualDataCollection,
-                    child: Text(
-                      isManualDataCollection
-                          ? 'Stop Manual Data Collection'
-                          : 'Start Manual Data Collection',
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _toggleAutoDataCollection,
-                    child: Text(
-                      isAutoDataCollection
-                          ? 'Stop Auto Data Collection'
-                          : 'Start Auto Data Collection',
-                    ),
-                  ),
-                  Icon(
-                    Icons.directions_bike,
-                    color: isCollectingData ? Colors.green : Colors.grey,
-                    size: 48.0,
-                  ),
-                ],
-              ),
+            FooterControls(
+              dataCollectionManager: _dataCollectionManager,
+              toggleDataCollection: _toggleDataCollection,
+              toggleManualDataCollection: _toggleManualDataCollection,
+              toggleAutoDataCollection: _toggleAutoDataCollection,
+              sendDataToServer: sendDataToServer,
             ),
           ],
         ),

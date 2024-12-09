@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:collection';
 
+// Define a global key for ScaffoldMessenger
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class SnackbarManager {
   SnackbarManager._privateConstructor();
 
@@ -14,14 +17,14 @@ class SnackbarManager {
   final Queue<String> _messageQueue = Queue<String>();
   bool _isShowing = false;
 
-  void showSnackBar(BuildContext context, String message) {
+  void showSnackBar(String message) {
     _messageQueue.add(message);
     if (!_isShowing) {
-      _showNextSnackBar(context);
+      _showNextSnackBar();
     }
   }
 
-  void _showNextSnackBar(BuildContext context) {
+  void _showNextSnackBar() {
     if (_messageQueue.isEmpty) {
       _isShowing = false;
       return;
@@ -37,9 +40,9 @@ class SnackbarManager {
       duration: Duration(seconds: 4),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((_) {
+    rootScaffoldMessengerKey.currentState?.showSnackBar(snackBar).closed.then((_) {
       Future.delayed(Duration(seconds: 1), () {
-        _showNextSnackBar(context);
+        _showNextSnackBar();
       });
     });
   }

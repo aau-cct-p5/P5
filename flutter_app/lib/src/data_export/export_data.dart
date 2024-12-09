@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_app/src/snackbar_helper.dart';
 import 'package:http/http.dart' as http;
 import '../historic_data.dart';
 import 'dart:developer' as developer;
@@ -92,11 +93,13 @@ Future<String> sendDataToServerFromExportData() async {
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
     statusMessage +=
         '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount.';
-    
+
     // Throw an exception with the error code
     throw Exception(
         'Failed to send data to server. Status code: ${response.statusCode}');
   }
+
+  SnackbarManager().showSnackBar(statusMessage);
 
   return statusMessage;
 }

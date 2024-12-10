@@ -1,7 +1,9 @@
+# docker-compose.yml
+
 version: "3.8"
 services:
   road-surface-detection:
-    build: ./surfaceDetectionEngine
+    build: .
     container_name: road-surface-detection
     volumes:
       - ./data:/data:rw

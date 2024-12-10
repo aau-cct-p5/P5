@@ -85,8 +85,8 @@ class DataCollectionManager {
       _appendHistoricDataToFile();
     });
 
-    // Sample every 10ms regardless of changes
-    _samplingTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+    // Sample every 20ms regardless of changes
+    _samplingTimer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
       _saveHistoricData();
     });
 
@@ -128,7 +128,6 @@ class DataCollectionManager {
     ).listen((Position position) {
       _currentPosition = position;
       onDataUpdated();
-      // No call to _saveHistoricData() here
     });
   }
 
@@ -136,7 +135,6 @@ class DataCollectionManager {
     return userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       _userAccelerometerEvent = event;
       onDataUpdated();
-      // No call to _saveHistoricData() here
     });
   }
 
@@ -144,7 +142,6 @@ class DataCollectionManager {
     return gyroscopeEvents.listen((GyroscopeEvent event) {
       _gyroscopeEvent = event;
       onDataUpdated();
-      // No call to _saveHistoricData() here
     });
   }
 

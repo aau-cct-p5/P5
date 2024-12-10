@@ -88,7 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
       sendDataToServerCallback: sendDataToServer,
     );
 
-    _dataCollectionManager.updateWrittenSamples();
     _activityRecognitionManager.subscribeActivityStream();
   }
 
@@ -180,7 +179,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> sendDataToServer() async {
     String status = await sendDataToServerFromExportData();
-    await _dataCollectionManager.updateWrittenSamples();
     return status;
   }
 

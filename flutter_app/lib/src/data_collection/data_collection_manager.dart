@@ -85,8 +85,8 @@ class DataCollectionManager {
       _appendHistoricDataToFile();
     });
 
-    // Sample every 20ms regardless of changes
-    _samplingTimer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    // Sample every 5ms regardless of changes
+    _samplingTimer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
       _saveHistoricData();
     });
 

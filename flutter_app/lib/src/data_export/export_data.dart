@@ -54,53 +54,68 @@ Future<String> sendDataToServerFromExportData() async {
 
   final headers = {
     'Content-Type': 'application/json',
-    'Authorization':
-        'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='
+    'Authorization': 'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='
   };
 
-  final remainingLines = <String>[];
-  int successCount = 0;
-
-  final bulkBody =
-      '${lines.expand((line) => ['{"create":{}}', line]).join('\n')}\n';
   final bulkUrl = Uri.parse(
       'https://elastic.mcmogens.dk/bikehero-data-stream/_bulk?refresh');
-  final response = await http.post(
-    bulkUrl,
-    headers: headers,
-    body: bulkBody,
-  );
-  if (response.statusCode == 200) {
-    developer.log('Bulk data sent successfully.');
-    statusMessage += 'Bulk data sent successfully.\n';
-    successCount = lines.length;
+
+  // Helper function to send data in fixed batch size (1000)
+  Future<void> sendInBatches(List<String> allLines, int batchSize) async {
+    List<String> remainingLines = List.from(allLines);
+    int totalSent = 0;
+
+    for (int i = 0; i < allLines.length; i += batchSize) {
+      final chunkEnd = (i + batchSize > allLines.length) ? allLines.length : i + batchSize;
+      final chunk = allLines.sublist(i, chunkEnd);
+
+      final bulkBody = '${chunk.expand((line) => ['{"create":{}}', line]).join('\n')}\n';
+      final response = await http.post(
+        bulkUrl,
+        headers: headers,
+        body: bulkBody,
+      );
+
+      developer.log('Bulk request response status: ${response.statusCode}');
+      developer.log('Bulk request response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        developer.log('Batch from $i to ${chunkEnd - 1} sent successfully.');
+        totalSent += chunk.length;
+        // Remove the sent portion from the remaining lines
+        remainingLines = remainingLines.sublist(chunk.length);
+      } else {
+        developer.log(
+            'Failed to send bulk data for batch starting at $i. Status code: ${response.statusCode}, Response: ${response.body}');
+        // Write back remaining lines
+        await file.writeAsString(remainingLines.join('\n'));
+        SnackbarManager().showSnackBar('Failed to send data to server. Status code: ${response.statusCode} - ${response.body}');
+        
+        // Throw an exception to stop execution as requested
+        throw Exception('Failed to send batch $i to ${chunkEnd - 1}. Stopping execution.');
+      }
+    }
+
+    // If all lines sent successfully, clear the file
     try {
       await file.writeAsString('');
       developer.log(
-          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount');
-      statusMessage +=
-          'All data sent successfully. measurements.txt deleted. Total data points sent: $successCount.';
+          'All data sent successfully. measurements.txt cleared. Total data points sent: $totalSent');
     } catch (e) {
       developer.log('Error deleting file: $e');
-      statusMessage += 'Error deleting file: $e.';
+      // Even if deletion fails, data was successfully sent, so no need to throw here.
     }
-  } else {
-    developer
-        .log('Failed to send bulk data. Status code: ${response.statusCode}.');
-    statusMessage +=
-        'Failed to send bulk data. Status code: ${response.statusCode}.\n';
-    await file.writeAsString(remainingLines.join('\n'));
-    developer.log(
-        '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount');
-    statusMessage +=
-        '${remainingLines.length} data entries could not be sent and have been retained. Total data points sent: $successCount.';
-
-    // Throw an exception with the error code
-    throw Exception(
-        'Failed to send data to server. Status code: ${response.statusCode}');
   }
 
-  SnackbarManager().showSnackBar(statusMessage);
+  // Attempt to send all data in batches of 1000
+  try {
+    await sendInBatches(lines, 1000);
+    statusMessage += 'All data sent successfully.\n';
+    SnackbarManager().showSnackBar(statusMessage);
+  } catch (e) {
+    developer.log('Data sending failed. Exception: $e');
+    statusMessage += 'Data sending failed. Check snackbar for details.\n';
+  }
 
   return statusMessage;
 }

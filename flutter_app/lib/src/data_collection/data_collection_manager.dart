@@ -1,6 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_app/src/data_collection/collect_data.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import 'dart:async';
@@ -8,6 +8,7 @@ import 'dart:isolate'; // Import for multithreading
 import '../historic_data.dart';
 import 'dart:developer' as developer;
 import '../app.dart';
+import 'package:flutter/foundation.dart'; // Import for RootIsolateToken
 
 class DataCollectionManager {
   bool _isCollectingData = false;
@@ -44,13 +45,23 @@ class DataCollectionManager {
   /// Start a persistent isolate for I/O operations.
   Future<void> _startIOIsolate() async {
     _ioReceivePort = ReceivePort();
-    await Isolate.spawn(_ioIsolateEntry, _ioReceivePort.sendPort);
-    _ioSendPort = await _ioReceivePort.first; // Wait for isolate to send back its SendPort
+    var rootIsolateToken = RootIsolateToken.instance!;
+    await Isolate.spawn(
+      _ioIsolateEntry,
+      [_ioReceivePort.sendPort, rootIsolateToken], // Pass the token
+    );
+    _ioSendPort = await _ioReceivePort
+        .first; // Wait for isolate to send back its SendPort
   }
 
-  /// The entry point for the I/O isolate. 
+  /// The entry point for the I/O isolate.
   /// It sets up a ReceivePort to listen for incoming data batches and writes them to the file.
-  static Future<void> _ioIsolateEntry(SendPort mainSendPort) async {
+  static Future<void> _ioIsolateEntry(List<dynamic> args) async {
+    SendPort mainSendPort = args[0];
+    RootIsolateToken rootIsolateToken = args[1];
+
+    BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+
     final receivePort = ReceivePort();
     // Send the sendPort for this isolate back to main isolate
     mainSendPort.send(receivePort.sendPort);
@@ -86,7 +97,7 @@ class DataCollectionManager {
     });
 
     // Sample every 5ms regardless of changes
-    _samplingTimer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
+    _samplingTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       _saveHistoricData();
     });
 
@@ -146,7 +157,10 @@ class DataCollectionManager {
   }
 
   Future<void> _saveHistoricData() async {
-    if (!_isCollectingData) return;
+    if (!_isCollectingData ||
+        _currentPosition == null ||
+        _userAccelerometerEvent == null ||
+        _gyroscopeEvent == null) return;
     // Create a new data point with the latest known values
     final data = HistoricData(
       timestamp: DateTime.now(),
@@ -182,7 +196,6 @@ class DataCollectionManager {
     // Close the IO isolate
     _ioSendPort?.send('close');
   }
-
 
   bool get isCollectingData => _isCollectingData;
 

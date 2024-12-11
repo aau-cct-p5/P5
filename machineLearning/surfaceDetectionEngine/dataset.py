@@ -4,54 +4,72 @@ import csv
 import torch
 from torch.utils.data import Dataset
 
-class RoadSurfaceSequenceDataset(Dataset):
-    def __init__(self, csv_file, feature_cols, seq_len=100):
+class RoadSurfaceDataset(Dataset):
+    def __init__(self, csv_file, feature_cols, mode="train"):
         self.feature_cols = feature_cols
-        self.seq_len = seq_len
-        self.data = []
+        self.mode = mode
+        self.samples = []
         self.labels = []
         self.label2idx = {}
         self.idx2label = {}
-
-        # Read entire CSV into memory
-        rows = []
+        
+        # We'll store rows for predict mode to output predictions later
+        # For training mode, we just store features and labels
         with open(csv_file, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                rows.append(row)
+                st = row["surfaceType"]
+                if not st.strip():
+                    continue
+                if self.mode == "train":
+                    if st == "none":
+                        continue
+                elif self.mode == "predict":
+                    if st != "none":
+                        continue
 
-        # Convert rows into numeric feature vectors and labels
-        # We assume rows are in chronological order
-        # We'll form sequences from these rows
-        self.num_samples = len(rows)
-        self.num_sequences = self.num_samples - self.seq_len + 1
+                # Extract features
+                skip_row = False
+                feature_values = []
+                for col in feature_cols:
+                    val_str = row[col].strip()
+                    if val_str == "":
+                        skip_row = True
+                        break
+                    try:
+                        val = float(val_str)
+                        feature_values.append(val)
+                    except ValueError:
+                        skip_row = True
+                        break
+                if skip_row:
+                    continue
 
-        for i in range(self.num_sequences):
-            seq = rows[i:i+self.seq_len]
-            features_seq = []
-            for r in seq:
-                features = [float(r[col]) for col in feature_cols]
-                features_seq.append(features)
-            
-            # Label is taken from the last row in the sequence
-            label = seq[-1]["surfaceType"]
-            if label not in self.label2idx:
-                self.label2idx[label] = len(self.label2idx)
-                self.idx2label[self.label2idx[label]] = label
+                if self.mode == "train":
+                    label = st
+                    if label not in self.label2idx:
+                        self.label2idx[label] = len(self.label2idx)
+                        self.idx2label[self.label2idx[label]] = label
+                    self.samples.append((feature_values, label))
+                else:
+                    # For predict mode, store entire row for final output
+                    self.samples.append((feature_values, row))
 
-            self.data.append(features_seq)
-            self.labels.append(label)
-
-        self.num_classes = len(self.label2idx)
+        if self.mode == "train":
+            self.num_classes = len(self.label2idx)
+        else:
+            self.num_classes = None
 
     def __len__(self):
-        return self.num_sequences
+        return len(self.samples)
 
     def __getitem__(self, idx):
-        features_seq = self.data[idx]          # shape: [seq_len, num_features]
-        lbl = self.labels[idx]
-        features_seq = torch.tensor(features_seq, dtype=torch.float32)  # (seq_len, num_features)
-        # Transpose to (num_features, seq_len) so we have (batch, num_features, seq_len) for CNN
-        features_seq = features_seq.transpose(0, 1)  # (num_features, seq_len)
-        label_idx = self.label2idx[lbl]
-        return features_seq, label_idx
+        if self.mode == "train":
+            features, lbl = self.samples[idx]
+            features = torch.tensor(features, dtype=torch.float32)
+            label_idx = self.label2idx[lbl]
+            return features, label_idx
+        else:
+            features, row = self.samples[idx]
+            features = torch.tensor(features, dtype=torch.float32)
+            return features, row

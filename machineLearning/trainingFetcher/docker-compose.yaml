@@ -1,0 +1,9 @@
+# docker-compose.yml
+
+version: "3.8"
+services:
+  road-surface-detection:
+    build: .
+    container_name: training-fetcher
+    volumes:
+      - ./data:/data:rw

@@ -1,6 +1,6 @@
-
-torch
-torchvision
-numpy
-scikit-learn
-Pillow
+# requirements.txt
+torch==2.0.0
+torchvision==0.15.1
+Pillow==9.4.0
+scikit-learn==1.2.2
+numpy<2.0

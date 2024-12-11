@@ -7,9 +7,6 @@ services:
     container_name: road-surface-detection
     volumes:
       - ./data:/data:rw
+    environment:
+      - MODE=predict  # predict || train
     command: ["python", "main.py"]
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu] # enable GPU

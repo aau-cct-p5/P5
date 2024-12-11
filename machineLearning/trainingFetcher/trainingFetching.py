@@ -7,7 +7,7 @@ import csv
 load_dotenv()
 api_key=os.getenv("ELASTIC_API_KEY")
 host="https://elastic.mcmogens.dk"
-
+training_data_path="/data/training_data.csv"
 index_name=".ds-bikehero-data-stream-2024.11.22-000001"
 
 def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):
@@ -25,7 +25,7 @@ def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):
     scroll_id = response.get('_scroll_id')
     hits = response['hits']['hits']
 
-    data.extend([hit['_source'] for hit in hits])
+    data.extend([{**hit['_source'], '_id': hit['_id']} for hit in hits])
     print(f"Fetched {len(hits)} documents in the first batch...")
     while hits:
         response = elastic.scroll(scroll_id=scroll_id, scroll=scroll)
@@ -33,7 +33,7 @@ def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):
         hits = response['hits']['hits']
         if not hits: 
             break
-        data.extend([hit['_source'] for hit in hits])
+        data.extend([{**hit['_source'], '_id': hit['_id']} for hit in hits])
         print(f"Fetched {len(hits)} more documents, total: {len(data)}")
     
     elastic.clear_scroll(scroll_id=scroll_id)
@@ -79,4 +79,4 @@ def save_to_csv(data, file_name):
 
 data = fetch_data(host, api_key, index_name)
 data = prepare_for_csv(data)
-save_to_csv(data, "./training_data.csv")
+save_to_csv(data, training_data_path)

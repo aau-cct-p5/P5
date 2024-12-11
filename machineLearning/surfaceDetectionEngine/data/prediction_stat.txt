@@ -1,0 +1,4 @@
+Total documents for prediction: 58098
+Total documents predicted: 58098
+Predicted class distribution:
+asphalt: 58098

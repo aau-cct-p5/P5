@@ -6,13 +6,14 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 import numpy as np
 import copy
+from sklearn.metrics import classification_report, confusion_matrix
+from config import TRAIN_STAT_FILE
 
 def train_and_evaluate(model, dataset, num_epochs, batch_size, lr, val_split, test_split, seed, device, model_save_path, log_interval=10):
     # Set seed
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    # Create indices for train/val/test split
     dataset_size = len(dataset)
     indices = list(range(dataset_size))
     np.random.shuffle(indices)
@@ -57,7 +58,7 @@ def train_and_evaluate(model, dataset, num_epochs, batch_size, lr, val_split, te
             optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
-            running_corrects += torch.sum(preds == labels.data).item()
+            running_corrects += torch.sum(preds == labels).item()
             train_total += labels.size(0)
 
             if (i % log_interval == 0) and (i > 0):
@@ -76,7 +77,7 @@ def train_and_evaluate(model, dataset, num_epochs, batch_size, lr, val_split, te
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 _, preds = torch.max(outputs, 1)
-                val_running_corrects += torch.sum(preds == labels.data).item()
+                val_running_corrects += torch.sum(preds == labels).item()
                 val_total += labels.size(0)
 
         val_acc = val_running_corrects / val_total
@@ -92,19 +93,44 @@ def train_and_evaluate(model, dataset, num_epochs, batch_size, lr, val_split, te
 
     # Test evaluation with the best model
     model.eval()
-    test_running_corrects = 0
-    test_total = 0
+    test_preds = []
+    test_targets = []
     with torch.no_grad():
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
-            test_running_corrects += torch.sum(preds == labels.data).item()
-            test_total += labels.size(0)
-    test_acc = test_running_corrects / test_total
+            test_preds.extend(preds.cpu().numpy())
+            test_targets.extend(labels.cpu().numpy())
+
+    test_acc = np.mean(np.array(test_preds) == np.array(test_targets))
     print(f"Test Accuracy with best model: {test_acc:.4f}")
 
-    # Save best model
-    torch.save(model.state_dict(), model_save_path)
+    # Save best model and label mappings
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'label2idx': dataset.label2idx,
+        'idx2label': dataset.idx2label
+    }, model_save_path)
+
+    # Produce classification report and confusion matrix
+    report = classification_report(test_targets, test_preds, target_names=[dataset.idx2label[i] for i in range(len(dataset.idx2label))])
+    cm = confusion_matrix(test_targets, test_preds)
+
+    # Print classes identified
+    print("Classes identified:", dataset.idx2label)
+    print("Classification Report:\n", report)
+    print("Confusion Matrix:\n", cm)
+
+    # Save to train_stat.txt
+    with open(TRAIN_STAT_FILE, "w", encoding="utf-8") as f:
+        f.write("Classes identified:\n")
+        for k,v in dataset.idx2label.items():
+            f.write(f"{k}: {v}\n")
+        f.write("\nClassification Report:\n")
+        f.write(report)
+        f.write("\nConfusion Matrix:\n")
+        f.write(str(cm))
+        f.write("\n")
 
     return test_acc

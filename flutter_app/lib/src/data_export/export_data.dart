@@ -54,7 +54,8 @@ Future<String> sendDataToServerFromExportData() async {
 
   final headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='
+    'Authorization':
+        'ApiKey eFl6eXVKSUJfQU5hdks2UWFycTg6WWIyUUJPQWpRcW14cDVBN0Z3NVhjZw=='
   };
 
   final bulkUrl = Uri.parse(
@@ -66,10 +67,12 @@ Future<String> sendDataToServerFromExportData() async {
     int totalSent = 0;
 
     for (int i = 0; i < allLines.length; i += batchSize) {
-      final chunkEnd = (i + batchSize > allLines.length) ? allLines.length : i + batchSize;
+      final chunkEnd =
+          (i + batchSize > allLines.length) ? allLines.length : i + batchSize;
       final chunk = allLines.sublist(i, chunkEnd);
 
-      final bulkBody = '${chunk.expand((line) => ['{"create":{}}', line]).join('\n')}\n';
+      final bulkBody =
+          '${chunk.expand((line) => ['{"create":{}}', line]).join('\n')}\n';
       final response = await http.post(
         bulkUrl,
         headers: headers,
@@ -89,10 +92,12 @@ Future<String> sendDataToServerFromExportData() async {
             'Failed to send bulk data for batch starting at $i. Status code: ${response.statusCode}, Response: ${response.body}');
         // Write back remaining lines
         await file.writeAsString(remainingLines.join('\n'));
-        SnackbarManager().showSnackBar('Failed to send data to server. Status code: ${response.statusCode} - ${response.body}');
-        
+        SnackbarManager().showSnackBar(
+            'Failed to send data to server. Status code: - ${response.statusCode} - ${response.body} ');
+
         // Throw an exception to stop execution as requested
-        throw Exception('Failed to send batch $i to ${chunkEnd - 1}. Stopping execution.');
+        throw Exception(
+            'Failed to send batch $i to ${chunkEnd - 1}. Stopping execution.');
       }
     }
 
@@ -102,8 +107,7 @@ Future<String> sendDataToServerFromExportData() async {
       developer.log(
           'All data sent successfully. measurements.txt cleared. Total data points sent: $totalSent');
     } catch (e) {
-      developer.log('Error deleting file: $e');
-      // Even if deletion fails, data was successfully sent, so no need to throw here.
+      throw Exception('Error deleting file: $e');
     }
   }
 

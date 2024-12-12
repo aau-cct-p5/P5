@@ -1,4 +1,5 @@
-Total documents for prediction: 58098
-Total documents predicted: 58098
+Total documents for prediction: 91954
+Total documents predicted: 91954
 Predicted class distribution:
-asphalt: 58098
+asphalt: 90952
+gravel: 1002

@@ -1,1 +1,5 @@
 .env
+updater/data/predictions/predictions.csv
+trainingFetcher/data/training_data.csv
+surfaceDetectionEngine/data/predictions.csv
+surfaceDetectionEngine/data/training_data.csv

@@ -7,7 +7,7 @@ import csv
 load_dotenv()
 api_key=os.getenv("ELASTIC_API_KEY")
 host="https://elastic.mcmogens.dk"
-training_data_path="/data/training_data.csv"
+training_data_path="./data/training_data.csv"
 index_name=".ds-bikehero-data-stream-2024.11.22-000001"
 
 def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):
@@ -34,7 +34,8 @@ def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):
         if not hits: 
             break
         data.extend([{**hit['_source'], '_id': hit['_id']} for hit in hits])
-        print(f"Fetched {len(hits)} more documents, total: {len(data)}")
+        if(len(data)%10000 == 0):
+            print(f"Fetched {len(hits)} more documents, total: {len(data)}")
     
     elastic.clear_scroll(scroll_id=scroll_id)
     print(f"Finished fetchin {len(data)} documents.")
@@ -67,12 +68,17 @@ def save_to_csv(data, file_name):
         print("No data to write to CSV.")
         return
     
-    headers = data[0].keys()
+    keys = {key for row in data for key in row.keys()}
+    headers = [key for key in keys if not key.startswith('predicted_')]
 
     with open(file_name, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=headers)
         writer.writeheader()
-        writer.writerows(data)
+        filtered_data = [
+            {key: value for key, value in row.items() if key in headers}
+            for row in data
+        ]
+        writer.writerows(filtered_data)
 
     print(f"Data successfully written to {file_name}")
 

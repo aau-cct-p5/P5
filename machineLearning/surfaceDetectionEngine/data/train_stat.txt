@@ -5,13 +5,13 @@ Classes identified:
 Classification Report:
               precision    recall  f1-score   support
 
-     asphalt       1.00      1.00      1.00     12614
-      gravel       0.00      0.00      0.00        51
+     asphalt       0.91      0.95      0.93     27588
+      gravel       0.84      0.75      0.79     10333
 
-    accuracy                           1.00     12665
-   macro avg       0.50      0.50      0.50     12665
-weighted avg       0.99      1.00      0.99     12665
+    accuracy                           0.89     37921
+   macro avg       0.87      0.85      0.86     37921
+weighted avg       0.89      0.89      0.89     37921
 
 Confusion Matrix:
-[[12614     0]
- [   51     0]]
+[[26080  1508]
+ [ 2629  7704]]

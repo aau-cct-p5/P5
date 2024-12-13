@@ -92,12 +92,12 @@ class DataCollectionManager {
     _gyroscopeSubscription = _listenToGyroscope();
 
     // Write every 5 seconds
-    _writeTimer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+    _writeTimer = Timer.periodic(const Duration(seconds: 10), (Timer timer) {
       _appendHistoricDataToFile();
     });
 
-    // Sample every 5ms regardless of changes
-    _samplingTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+    // Sample every 4ms regardless of changes
+    _samplingTimer = Timer.periodic(const Duration(milliseconds: 4), (timer) {
       _saveHistoricData();
     });
 

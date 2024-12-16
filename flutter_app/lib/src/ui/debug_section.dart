@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/app.dart';
-import 'package:flutter_app/src/snackbar_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../data_collection/data_collection_manager.dart';

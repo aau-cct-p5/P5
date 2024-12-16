@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'permissions_service.dart';
-import 'location.dart';
 import 'activity.dart';
 import 'package:logger/logger.dart';
 import '../home_page.dart';

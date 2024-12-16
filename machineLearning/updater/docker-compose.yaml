@@ -1,0 +1,9 @@
+# docker-compose.yml
+
+version: "3.8"
+services:
+  updater:
+    build: .
+    container_name: updater
+    volumes:
+      - ./data:/data:rw

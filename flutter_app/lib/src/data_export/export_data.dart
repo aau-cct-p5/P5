@@ -6,6 +6,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/services.dart' show rootBundle;
 import '../data_collection/collect_data.dart';
 
+// Prepares HistoricData into a map for JSON serialization
 Map<String, dynamic> prepareData(HistoricData data) {
   return {
     '@timestamp': data.timestamp.toUtc().toIso8601String(),
@@ -28,6 +29,7 @@ Map<String, dynamic> prepareData(HistoricData data) {
   };
 }
 
+// Retrieves the global SSL security context with trusted certificates
 Future<SecurityContext> get globalContext async {
   final sslCert = await rootBundle.load('assets/ca/elasticsearch.crt');
   SecurityContext securityContext = SecurityContext(withTrustedRoots: false);
@@ -35,6 +37,7 @@ Future<SecurityContext> get globalContext async {
   return securityContext;
 }
 
+// Sends exported data to the server and handles response
 Future<String> sendDataToServerFromExportData() async {
   String statusMessage = '';
 
@@ -61,7 +64,7 @@ Future<String> sendDataToServerFromExportData() async {
   final bulkUrl = Uri.parse(
       'https://elastic.mcmogens.dk/bikehero-data-stream/_bulk?refresh');
 
-  // Helper function to send data in fixed batch size (1000)
+  // Sends data in batches of specified size
   Future<void> sendInBatches(List<String> allLines, int batchSize) async {
     List<String> remainingLines = List.from(allLines);
     int totalSent = 0;
@@ -85,23 +88,20 @@ Future<String> sendDataToServerFromExportData() async {
       if (response.statusCode == 200) {
         developer.log('Batch from $i to ${chunkEnd - 1} sent successfully.');
         totalSent += chunk.length;
-        // Remove the sent portion from the remaining lines
         remainingLines = remainingLines.sublist(chunk.length);
       } else {
         developer.log(
             'Failed to send bulk data for batch starting at $i. Status code: ${response.statusCode}, Response: ${response.body}');
-        // Write back remaining lines
-        await file.writeAsString(remainingLines.join('\n'));
+        await file.writeAsString(remainingLines.join('\n')); // Save unsent data
         SnackbarManager().showSnackBar(
             'Failed to send data to server. Status code: - ${response.statusCode} - ${response.body} ');
 
-        // Throw an exception to stop execution as requested
         throw Exception(
             'Failed to send batch $i to ${chunkEnd - 1}. Stopping execution.');
       }
     }
 
-    // If all lines sent successfully, clear the file
+    // Clears the file after successful data transmission
     try {
       await file.writeAsString('');
       developer.log(
@@ -111,7 +111,7 @@ Future<String> sendDataToServerFromExportData() async {
     }
   }
 
-  // Attempt to send all data in batches of 1000
+  // Initiates data sending process
   try {
     await sendInBatches(lines, 1000);
     statusMessage += 'All data sent successfully.\n';

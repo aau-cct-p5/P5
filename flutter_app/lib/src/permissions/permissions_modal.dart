@@ -5,6 +5,7 @@ import 'activity.dart';
 import 'package:logger/logger.dart';
 import '../home_page.dart';
 
+// Modal widget to handle permission requests
 class PermissionsModal extends StatefulWidget {
   const PermissionsModal({super.key});
 
@@ -21,18 +22,22 @@ class _PermissionsModalState extends State<PermissionsModal> {
   @override
   void initState() {
     super.initState();
-    _checkPermissions();
+    _checkPermissions(); // Initialize permission checks
   }
 
+  // Checks and requests location and activity permissions
   Future<void> _checkPermissions() async {
-    _locationPermissionGranted = await _permissionsService.requestLocationPermission();
+    _locationPermissionGranted =
+        await _permissionsService.requestLocationPermission();
     _activityPermissionGranted = await checkAndRequestActivityPermission();
-    setState(() {});
+    setState(() {}); // Refresh UI with updated permissions
 
     if (_locationPermissionGranted && _activityPermissionGranted) {
-      await Future.delayed(const Duration(seconds: 2)); // Show modal for 2 seconds
+      await Future.delayed(
+          const Duration(seconds: 2)); // Wait before navigation
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Bike Hero')),
+        MaterialPageRoute(
+            builder: (context) => const MyHomePage(title: 'Bike Hero')),
       );
     }
   }
@@ -41,7 +46,7 @@ class _PermissionsModalState extends State<PermissionsModal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Permissions Required'),
+        title: const Text('Permissions Required'), // Modal header
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -68,6 +73,7 @@ class _PermissionsModalState extends State<PermissionsModal> {
     );
   }
 
+  // Builds a widget to display the status of a permission
   Widget _buildPermissionItem(String permissionName, bool granted) {
     return Row(
       children: [

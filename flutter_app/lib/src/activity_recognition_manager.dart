@@ -35,8 +35,7 @@ class ActivityRecognitionManager {
   void subscribeActivityStream() async {
     if (!isAutoDataCollection)
       return; // Only subscribe if auto data collection is enabled
-    bool hasPermission =
-        await checkAndRequestActivityPermission(); // Use the new method
+    bool hasPermission = await checkAndRequestActivityPermission();
     if (hasPermission) {
       activitySubscription = fr
           .FlutterActivityRecognition.instance.activityStream
@@ -53,7 +52,7 @@ class ActivityRecognitionManager {
 
   void onActivityChange(fr.Activity activity) {
     if (!isAutoDataCollection)
-      return; // Ignore if auto data collection is disabled
+      return; // Ignore if auto data collection is disabled (Early return)
 
     currentActivity = activity.type;
     onActivityChanged(currentActivity);

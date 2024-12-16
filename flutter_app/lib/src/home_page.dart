@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'data_export/export_data.dart';
 import 'dart:developer' as developer;
 import 'map.dart';
-import 'package:flutter_activity_recognition/flutter_activity_recognition.dart' as fr;
+import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
+    as fr;
 import 'ml_training_ui.dart';
 import 'data_collection/data_collection_manager.dart';
 import 'activity_recognition_manager.dart';
 import 'app.dart';
-import 'snackbar_helper.dart'; // Import the SnackbarManager and global key
+import 'snackbar_helper.dart';
 import 'ui/debug_section.dart';
-import 'ui/sensor_data_display.dart';
 import 'ui/footer_controls.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -103,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      developer.log('Initial position: ${position.latitude}, ${position.longitude}');
+      developer
+          .log('Initial position: ${position.latitude}, ${position.longitude}');
       setState(() {
         _currentPosition = position;
       });
@@ -192,7 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
           actions: [
             IconButton(
-              icon: Icon(_isDebugVisible ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                  _isDebugVisible ? Icons.visibility_off : Icons.visibility),
               onPressed: _toggleDebugVisibility,
             ),
             IconButton(
@@ -235,10 +236,13 @@ class _MyHomePageState extends State<MyHomePage> {
                               DebugSection(
                                 currentPosition: _currentPosition,
                                 dataCollectionManager: _dataCollectionManager,
-                                activityRecognitionManager: _activityRecognitionManager,
+                                activityRecognitionManager:
+                                    _activityRecognitionManager,
                                 toggleDataCollection: _toggleDataCollection,
-                                toggleManualDataCollection: _toggleManualDataCollection,
-                                toggleAutoDataCollection: _toggleAutoDataCollection,
+                                toggleManualDataCollection:
+                                    _toggleManualDataCollection,
+                                toggleAutoDataCollection:
+                                    _toggleAutoDataCollection,
                                 sendDataToServer: sendDataToServer,
                               ),
                             if (_showMLWidget)

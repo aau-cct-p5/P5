@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A widget that allows the user to select a surface type for training.
 class MLTrainingWidget extends StatefulWidget {
   final Function(String) onSurfaceTypeChanged;
 
@@ -11,6 +12,7 @@ class MLTrainingWidget extends StatefulWidget {
 }
 
 class _MLTrainingWidgetState extends State<MLTrainingWidget> {
+  /// Currently selected surface type.
   String _selectedSurfaceType = 'none';
 
   @override
@@ -23,10 +25,12 @@ class _MLTrainingWidgetState extends State<MLTrainingWidget> {
             setState(() {
               _selectedSurfaceType = newValue ?? 'none';
             });
-            widget.onSurfaceTypeChanged(_selectedSurfaceType); // Pass to parent
+            // Notify the parent widget about the surface type change.
+            widget.onSurfaceTypeChanged(_selectedSurfaceType);
             if (_selectedSurfaceType != 'none') {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
+                  // Inform the user to cycle on the selected surface type.
                   content: Text(
                       'Please only cycle on $_selectedSurfaceType surfaces.'),
                 ),
@@ -40,6 +44,7 @@ class _MLTrainingWidgetState extends State<MLTrainingWidget> {
               child: Text(
                 value == 'none'
                     ? 'No label'
+                    // Capitalize the first letter of the surface type.
                     : value[0].toUpperCase() + value.substring(1),
               ),
             );

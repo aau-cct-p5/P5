@@ -3,20 +3,25 @@ import 'dart:async';
 import 'dart:collection';
 
 // Define a global key for ScaffoldMessenger
-final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
+// Singleton pattern implementation for SnackbarManager
 class SnackbarManager {
   SnackbarManager._privateConstructor();
 
-  static final SnackbarManager _instance = SnackbarManager._privateConstructor();
+  static final SnackbarManager _instance =
+      SnackbarManager._privateConstructor();
 
   factory SnackbarManager() {
     return _instance;
   }
 
+  // Queue to manage snackbar messages
   final Queue<String> _messageQueue = Queue<String>();
   bool _isShowing = false;
 
+  /// Shows a snackbar with the given message
   void showSnackBar(String message) {
     _messageQueue.add(message);
     if (!_isShowing) {
@@ -40,7 +45,10 @@ class SnackbarManager {
       duration: Duration(seconds: 4),
     );
 
-    rootScaffoldMessengerKey.currentState?.showSnackBar(snackBar).closed.then((_) {
+    rootScaffoldMessengerKey.currentState
+        ?.showSnackBar(snackBar)
+        .closed
+        .then((_) {
       Future.delayed(Duration(seconds: 1), () {
         _showNextSnackBar();
       });

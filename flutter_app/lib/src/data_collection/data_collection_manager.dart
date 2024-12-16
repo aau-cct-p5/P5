@@ -4,33 +4,38 @@ import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import 'dart:async';
-import 'dart:isolate'; // Import for multithreading
+import 'dart:isolate';
 import '../historic_data.dart';
 import 'dart:developer' as developer;
 import '../app.dart';
-import 'package:flutter/foundation.dart'; // Import for RootIsolateToken
 
+// Manages the collection of sensor and location data
 class DataCollectionManager {
-  bool _isCollectingData = false;
-  int _writtenSamples = 0;
-  final List<HistoricData> _tempHistoricData = [];
+  bool _isCollectingData = false; // Indicates if data collection is active
+  int _writtenSamples = 0; // Number of samples written
+  final List<HistoricData> _tempHistoricData = []; // Temporary storage for data
 
-  Timer? _writeTimer;
-  Timer? _samplingTimer;
-  Position? _currentPosition;
-  UserAccelerometerEvent? _userAccelerometerEvent;
-  GyroscopeEvent? _gyroscopeEvent;
+  Timer? _writeTimer; // Timer for periodic file writing
+  Timer? _samplingTimer; // Timer for data sampling
+  Position? _currentPosition; // Current GPS position
+  UserAccelerometerEvent? _userAccelerometerEvent; // Latest accelerometer event
+  GyroscopeEvent? _gyroscopeEvent; // Latest gyroscope event
 
-  StreamSubscription<Position>? _positionSubscription;
-  StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
-  StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
+  StreamSubscription<Position>?
+      _positionSubscription; // Subscription to location changes
+  StreamSubscription<UserAccelerometerEvent>?
+      _accelerometerSubscription; // Subscription to accelerometer events
+  StreamSubscription<GyroscopeEvent>?
+      _gyroscopeSubscription; // Subscription to gyroscope events
 
-  final Function(int) onWrittenSamplesUpdated;
-  final Function() onDataUpdated;
-  final Function() getCurrentSurfaceType;
+  final Function(int)
+      onWrittenSamplesUpdated; // Callback for written samples update
+  final Function() onDataUpdated; // Callback for data updates
+  final Function()
+      getCurrentSurfaceType; // Callback to get current surface type
 
-  int _samplesInLastInterval = 0;
-  Timer? _samplingRateTimer;
+  int _samplesInLastInterval = 0; // Samples counted in the last interval
+  Timer? _samplingRateTimer; // Timer for logging sampling rate
 
   // Ports for communicating with I/O isolate
   SendPort? _ioSendPort;
@@ -82,21 +87,22 @@ class DataCollectionManager {
     }
   }
 
+  /// Starts the data collection process.
   Future<void> startDataCollection() async {
     developer.log('Starting data collection...');
-    await _startIOIsolate(); // Start the I/O isolate first
+    await _startIOIsolate();
 
     _isCollectingData = true;
     _positionSubscription = _listenToLocationChanges();
     _accelerometerSubscription = _listenToAccelerometer();
     _gyroscopeSubscription = _listenToGyroscope();
 
-    // Write every 5 seconds
+    // Write data to file every 10 seconds
     _writeTimer = Timer.periodic(const Duration(seconds: 10), (Timer timer) {
       _appendHistoricDataToFile();
     });
 
-    // Sample every 4ms regardless of changes
+    // Sample data every 4ms regardless of changes
     _samplingTimer = Timer.periodic(const Duration(milliseconds: 4), (timer) {
       _saveHistoricData();
     });
@@ -109,14 +115,17 @@ class DataCollectionManager {
     });
   }
 
+  /// Enables automatic data collection mode.
   void startAutoDataCollection() {
     isAutoDataCollection = true;
   }
 
+  /// Disables automatic data collection mode.
   void stopAutoDataCollection() {
     isAutoDataCollection = false;
   }
 
+  /// Stops the data collection process and cleans up resources.
   void stopDataCollection() {
     _isCollectingData = false;
     _positionSubscription?.cancel();
@@ -130,6 +139,7 @@ class DataCollectionManager {
     _ioSendPort?.send('close');
   }
 
+  // Subscribes to location changes using Geolocator
   StreamSubscription<Position> _listenToLocationChanges() {
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -142,6 +152,7 @@ class DataCollectionManager {
     });
   }
 
+  // Subscribes to accelerometer events
   StreamSubscription<UserAccelerometerEvent> _listenToAccelerometer() {
     return userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       _userAccelerometerEvent = event;
@@ -149,6 +160,7 @@ class DataCollectionManager {
     });
   }
 
+  // Subscribes to gyroscope events
   StreamSubscription<GyroscopeEvent> _listenToGyroscope() {
     return gyroscopeEvents.listen((GyroscopeEvent event) {
       _gyroscopeEvent = event;
@@ -156,6 +168,7 @@ class DataCollectionManager {
     });
   }
 
+  /// Saves the latest sensor and location data into temporary storage.
   Future<void> _saveHistoricData() async {
     if (!_isCollectingData ||
         _currentPosition == null ||
@@ -174,6 +187,7 @@ class DataCollectionManager {
     _samplesInLastInterval += 1;
   }
 
+  /// Appends the collected historic data to the file via the I/O isolate.
   Future<void> _appendHistoricDataToFile() async {
     if (_tempHistoricData.isEmpty) {
       return;
@@ -185,6 +199,7 @@ class DataCollectionManager {
     _ioSendPort?.send(dataToAppend);
   }
 
+  /// Disposes of all resources and stops data collection.
   Future<void> dispose() async {
     _positionSubscription?.cancel();
     _accelerometerSubscription?.cancel();

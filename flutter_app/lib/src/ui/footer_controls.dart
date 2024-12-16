@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/app.dart';
 import '../data_collection/data_collection_manager.dart';
-import '../snackbar_helper.dart'; // If needed for SnackbarManager
+import '../snackbar_helper.dart';
 
+/// Footer controls with buttons to manage data collection and send data.
 class FooterControls extends StatelessWidget {
   final DataCollectionManager dataCollectionManager;
   final VoidCallback toggleDataCollection;
@@ -11,6 +11,7 @@ class FooterControls extends StatelessWidget {
   final VoidCallback toggleAutoDataCollection;
   final Future<String> Function() sendDataToServer;
 
+  /// Constructs FooterControls with necessary callbacks and manager.
   const FooterControls({
     Key? key,
     required this.dataCollectionManager,
@@ -22,17 +23,21 @@ class FooterControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Layout padding for the footer controls
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           ElevatedButton(
             onPressed: () async {
+              // Notify user that data is being sent
               SnackbarManager().showSnackBar('Sending data to server...');
               try {
                 await sendDataToServer();
+                // Notify success
                 SnackbarManager().showSnackBar('Data sent successfully.');
               } catch (e) {
+                // Notify failure
                 SnackbarManager().showSnackBar('Failed to send data: $e');
               }
             },

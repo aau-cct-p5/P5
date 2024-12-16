@@ -5,30 +5,36 @@ import 'permissions/location.dart';
 import 'package:logger/logger.dart';
 import 'permissions/permissions_modal.dart';
 
+// Flags for data collection modes
 bool isManualDataCollection = false;
 bool isAutoDataCollection = false;
 bool isCollectingData = false;
 
+// Initializes the app by setting up resources and permissions
 Future<void> initializeApp() async {
   await _createFileIfNotExists();
   await requestLocationPermissions();
 }
 
+// Creates the measurements file if it does not exist
 Future<void> _createFileIfNotExists() async {
   final Logger logger = Logger();
   try {
+    // Get the application documents directory
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/measurements.txt');
     if (!await file.exists()) {
+      // Create the file if it doesn't exist
       await file.create();
       logger.i('File created: ${file.path}');
     }
   } catch (e) {
+    // Log any errors encountered during file creation
     logger.e('Error creating file: $e');
   }
 }
 
-
+// MyApp is the root widget of the application
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -39,7 +45,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const PermissionsModal(),
+      home: const PermissionsModal(), // Displays permissions modal on startup
     );
   }
 }

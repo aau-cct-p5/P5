@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'permissions_service.dart';
-import 'location.dart';
 import 'activity.dart';
-import 'package:logger/logger.dart';
 import '../home_page.dart';
 
 // Modal widget to handle permission requests
@@ -15,7 +13,6 @@ class PermissionsModal extends StatefulWidget {
 
 class _PermissionsModalState extends State<PermissionsModal> {
   final PermissionsService _permissionsService = PermissionsService();
-  final Logger _logger = Logger();
   bool _locationPermissionGranted = false;
   bool _activityPermissionGranted = false;
 

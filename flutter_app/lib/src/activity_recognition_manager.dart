@@ -6,7 +6,6 @@ import 'dart:developer' as developer;
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart'
     as fr;
 import 'permissions/activity.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'app.dart';
 
 class ActivityRecognitionManager {

@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 
 # Configuration Parameters
 ELASTICSEARCH_URL = 'https://elastic.mcmogens.dk/testinglimits/_bulk?pretty'
-API_KEY = 'dEZ0a3o1TUJKeGlHZ2pkMzBsRUY6MVhBMm5UV1RSSnltRWxmRWxmUTJfcmFkdw=='
+API_KEY = 'MUF6TzFKTUJKeGlHZ2pkM1RfeUo6bHlVUl8xZnlSREs2REotbVZ4ZzA0Zw=='
 NUMBER_OF_PHONES = 100
 BATCH_SIZE = 1000
 BATCHES_PER_PHONE = 50
@@ -57,9 +57,9 @@ async def send_batch(session, bulk_payload, phone_id, batch_number):
             status = response.status
             response_text = await response.text()
             if status == 200:
-                print(f"Phone {phone_id}: Batch {batch_number} sent successfully. Status {response_text.status if hasattr(response_text, 'status') else status}")
+                print(f"Phone {phone_id}: Batch {batch_number} sent successfully. Status {response_text}")
             else:
-                print(f"Phone {phone_id}: Batch {batch_number} failed. Status: {status}, Response: {response_text.status}")
+                print(f"Phone {phone_id}: Batch {batch_number} failed. Status: {status}, Response: {response_text}")
     except Exception as e:
         print(f"Phone {phone_id}: Batch {batch_number} encountered an exception: {e}")
 

@@ -9,6 +9,7 @@ import json
 import random
 import time
 from datetime import datetime, timezone
+import logging
 
 # Configuration Parameters
 ELASTICSEARCH_URL = 'https://elastic.mcmogens.dk/testinglimits/_bulk?pretty'
@@ -17,6 +18,13 @@ NUMBER_OF_PHONES = 100
 BATCH_SIZE = 1000
 BATCHES_PER_PHONE = 50
 
+LOG_FILE = "phone_limit_tester.log"
+logging.basicConfig(
+    filename=LOG_FILE,
+    filemode="w",  # Overwrite the file each time
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
 
 def generate_fake_document():
     """Generates a single fake document matching the specified structure."""
@@ -61,13 +69,13 @@ def send_batch(bulk_payload, phone_id, batch_number):
         status = response.status_code
         response_text = response.text
         if status == 200:
-            print(f"Phone {phone_id}: Batch {batch_number} sent successfully in {elapsed_time:.2f} seconds. Status {response.status_code}")
+            logging.info(f"Phone {phone_id}: Batch {batch_number} sent successfully in {elapsed_time:.2f} seconds. Status {response.status_code}")
         else:
-            print(f"Phone {phone_id}: Batch {batch_number} failed in {elapsed_time:.2f} seconds. Status: {status}, Response: {response_text}")
+            logging.error(f"Phone {phone_id}: Batch {batch_number} failed in {elapsed_time:.2f} seconds. Status: {status}, Response: {response_text}")
     except Exception as e:
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"Phone {phone_id}: Batch {batch_number} encountered an exception after {elapsed_time:.2f} seconds: {e}")
+        logging.error(f"Phone {phone_id}: Batch {batch_number} encountered an exception after {elapsed_time:.2f} seconds: {e}")
 
 def simulate_phone(phone_id):
     """
@@ -90,7 +98,7 @@ def main():
         concurrent.futures.wait(futures)
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Total execution time: {elapsed_time:.2f} seconds")
+    logging.info(f"Total execution time: {elapsed_time:.2f} seconds")
 
 if __name__ == '__main__':
     main()

@@ -7,7 +7,7 @@ import csv
 load_dotenv()
 api_key=os.getenv("ELASTIC_API_KEY")
 host="https://elastic.mcmogens.dk"
-training_data_path="./data/training_data.csv"
+training_data_path="/data/training_data.csv"
 index_name=".ds-bikehero-data-stream-2024.11.22-000001"
 
 def fetch_data(host, api_key, index_name, scroll='2m', batch_size=1000):

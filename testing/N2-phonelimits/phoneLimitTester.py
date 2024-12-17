@@ -3,10 +3,11 @@
 This module simulates multiple phones sending batches of fake documents to Elasticsearch.
 """
 
-import asyncio
-import aiohttp
+import concurrent.futures
+import requests
 import json
 import random
+import time
 from datetime import datetime, timezone
 
 # Configuration Parameters
@@ -44,7 +45,7 @@ def prepare_bulk_payload(documents):
     bulk_payload = '\n'.join(actions) + '\n'
     return bulk_payload
 
-async def send_batch(session, bulk_payload, phone_id, batch_number):
+def send_batch(bulk_payload, phone_id, batch_number):
     """
     Sends a single batch of documents to Elasticsearch.
     """
@@ -53,17 +54,22 @@ async def send_batch(session, bulk_payload, phone_id, batch_number):
         'Authorization': f'ApiKey {API_KEY}'
     }
     try:
-        async with session.post(ELASTICSEARCH_URL, headers=headers, data=bulk_payload) as response:
-            status = response.status
-            response_text = await response.text()
-            if status == 200:
-                print(f"Phone {phone_id}: Batch {batch_number} sent successfully. Status {response_text}")
-            else:
-                print(f"Phone {phone_id}: Batch {batch_number} failed. Status: {status}, Response: {response_text}")
+        start_time = time.time()
+        response = requests.post(ELASTICSEARCH_URL, headers=headers, data=bulk_payload)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        status = response.status_code
+        response_text = response.text
+        if status == 200:
+            print(f"Phone {phone_id}: Batch {batch_number} sent successfully in {elapsed_time:.2f} seconds. Status {response.status_code}")
+        else:
+            print(f"Phone {phone_id}: Batch {batch_number} failed in {elapsed_time:.2f} seconds. Status: {status}, Response: {response_text}")
     except Exception as e:
-        print(f"Phone {phone_id}: Batch {batch_number} encountered an exception: {e}")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Phone {phone_id}: Batch {batch_number} encountered an exception after {elapsed_time:.2f} seconds: {e}")
 
-async def simulate_phone(phone_id, session):
+def simulate_phone(phone_id):
     """
     Simulates a single phone sending batches of documents.
     """
@@ -72,17 +78,19 @@ async def simulate_phone(phone_id, session):
         documents = [generate_fake_document() for _ in range(BATCH_SIZE)]
         bulk_payload = prepare_bulk_payload(documents)
         # Send the batch
-        await send_batch(session, bulk_payload, phone_id, batch_number)
+        send_batch(bulk_payload, phone_id, batch_number)
 
-async def main():
-    connector = aiohttp.TCPConnector(limit=1000)
-    timeout = aiohttp.ClientTimeout(total=600)
-    async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
-        tasks = []
-        for phone_id in range(1, NUMBER_OF_PHONES + 1):
-            task = asyncio.create_task(simulate_phone(phone_id, session))
-            tasks.append(task)
-        await asyncio.gather(*tasks)
+def main():
+    start_time = time.time()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=NUMBER_OF_PHONES) as executor:
+        futures = [
+            executor.submit(simulate_phone, phone_id) 
+            for phone_id in range(1, NUMBER_OF_PHONES + 1)
+        ]
+        concurrent.futures.wait(futures)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Total execution time: {elapsed_time:.2f} seconds")
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()

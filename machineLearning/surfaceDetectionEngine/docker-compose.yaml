@@ -8,5 +8,5 @@ services:
     volumes:
       - ./data:/data:rw
     environment:
-      - MODE=predict  # predict || train
+      - MODE=${MODE}  # predict || train
     command: ["python", "main.py"]

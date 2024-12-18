@@ -11,9 +11,11 @@
 - 🖥️ Elasticsearch backend
 - 🧐 Kibana For visualization
 
-## Installation
+## Access to Elastic
+Credentials for Kibana can be obtained by writing an email to [dmcmil22@student.aau.dk](mailto:dmcmil22@student.aau.dk)
 
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/lyngdorf/P5.git
-   ```
+## App developemnt
+For app development, go to the readme in the flutter_app dir
+
+## Data enrichment pipeline
+For machinelearning modules, go to the readme in the machineLearning directory

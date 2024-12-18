@@ -6,6 +6,7 @@ Prerequisites:
 - Pip
 - .env file in trainingFetcher folder with API key for Elastic (read privileges)
 - .env file in updater folder with API key for Elastic (write privileges)
+Write us an email for api keys
 
 ## How to run on local machine
 
